@@ -1,0 +1,1 @@
+A Python-centric static blog generator. Takes Python modules and turns them into blog posts, making full use of Markdown/ReST, doctests, and straight Python.
