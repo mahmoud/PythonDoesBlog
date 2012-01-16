@@ -5,32 +5,9 @@ import settings
 source_dir = settings.SOURCE_DIR
 posts      = OrderedDict()
 
-class Post(object):
-    def __init__(self, module_path):
-        #print pdw_id, module.__name__
-        file_name = os.path.basename(module_path)
+from post import Post
 
-        pdw_id = file_name.split('_')[0].lstrip('0')
-        try:
-            self.id = int(pdw_id)
-        except ValueError:
-            raise ValueError('PDWs should start with a unique integer representing the PDW ID.'+str(file_path))
-        
-        module_name = file_name.split('.')[0].lstrip('_01234567890')
-        imp_desc  = ('', 'r', imp.PY_SOURCE)
-        with open(module_path) as module_file:
-            self.module     = imp.load_module(module_name, module_file, module_path, imp_desc)
-            module_file.seek(0)
-            self.module_src = module_file.read()
-
-        self.title  = self.module.title
-        self.author = self.module.author # TODO: settings.AUTHORS lookup
-        self.tags   = getattr(self.module,'tags',())
-        self.date   = datetime.datetime(*self.module.date)
-
-        self.components = get_components(self.module_src)
-
-def generate():
+def get_posts():
     post_list = []
     for file_path in os.listdir(settings.SOURCE_DIR):
         if not file_path.endswith('.py') or file_path in settings.SOURCE_EXCLUDE:
@@ -42,63 +19,65 @@ def generate():
         except Exception as e:
             print 'Error creating Post from '+str(full_path)+':'+str(e)
             continue
+    
+    posts = OrderedDict((p.id, p) for p in sorted(post_list, key=lambda p: p.date))
+    
+    return posts
 
-    # import pdb;pdb.set_trace()
+def check_monotonic(posts):
+    monotonic = True
+    cur_max_id = 0
+    for (pid, post) in posts.items():
+        if cur_max_id > pid:
+            print 'Warning:',cur_max_id,'appears to be out of order (publish date is before',pid,').'
+            monotonic = False
+        else:
+            cur_max_id = pid
+    return monotonic
+
+def render_to(template_name, data=None, **kwargs):
+    from settings import TEMPLATE_DIRS
+    from mako.lookup import TemplateLookup
+
+    data = data or {}
+    data.update(kwargs)
+    try:
+        lookup   = TemplateLookup(directories=TEMPLATE_DIRS)
+        template = lookup.get_template(template_name)
+        rendered = template.render_unicode(**data)
+    except Exception as e:
+        from mako import exceptions
+        print exceptions.text_error_template().render()
+    return rendered
+
+def render_posts(posts):
+    from settings import OUTPUT_DIR
+    try:
+        os.listdir(OUTPUT_DIR)
+    except OSError as ose:
+        try:
+            os.mkdir(OUTPUT_DIR)
+            os.mkdir(os.path.join(OUTPUT_DIR,'posts'))
+        except OSError as ose2:
+            print 'Output directory',OUTPUT_DIR,'does not exist and could not be created.'
+            return False
+
+    with open(os.path.join(OUTPUT_DIR,'post_list.html'),'w') as pl_file:
+        pl_file.write(render_to('post_list.html', posts=posts))
+
+    for pid, post in posts.items():
+        with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.html'), 'w') as p_file:
+            p_file.write(render_to('post_single.html', post=post))
+                      
+    return True
+
+def generate():
+    posts = get_posts()
+    check_monotonic(posts)
+    post_list = render_posts(posts)
+    import pdb;pdb.set_trace()
 
 # TODO: automatic linking to other PDWs via syntax PDWxxx where xxx is an integer ID
-
-
-class DocTestPart(object):
-    def __init__(self, example):
-        self.examples = [example]
-    def add(self, example):
-        self.examples.append(example)
-    def __repr__(self):
-        return '<DocTestPart>'+self.examples.__repr__()
-
-class TextPart(str):
-    def __repr__(self):
-        return 'TextPart: '+str.__repr__(self)
-class CodePart(str):
-    def __repr__(self):
-        return 'CodePart: '+str.__repr__(self)
-
-metadata_attrs = ('date','title','tags','author')
-def get_components(string):
-    ret = []
-    import ast
-    from ast import Expr, Str, Assign
-    from doctest import DocTestParser,Example
-    dtp = DocTestParser()
-    lines = string.split("\n")
-    m_ast = ast.parse(string)
-    str_linestarts = [ x.lineno for x in m_ast.body if isinstance(x, Expr) and isinstance(x.value, Str)]
-    for i, node in enumerate(m_ast.body):
-        lineno = node.lineno
-        if isinstance(node, Expr) and isinstance(node.value, Str):
-            for s in dtp.parse(node.value.s):
-                if isinstance(s, Example):
-                    if ret and isinstance(ret[-1], DocTestPart):
-                        ret[-1].add(s)
-                    else:
-                        ret.append(DocTestPart(s))
-                elif len(s.strip()) > 0:
-                    ret.append(TextPart(s.strip()))
-                else:
-                    continue
-        elif isinstance(node, Assign) and node.targets[0].id in metadata_attrs:
-            continue
-        else:
-            last_line = 0
-            for subnode in ast.walk(node):
-                last_line = max(getattr(subnode,'lineno',0), last_line)
-            code_str = '\n'.join(lines[lineno-1:last_line]).strip()
-            if ret and isinstance(ret[-1], CodePart):
-                ret[-1] = CodePart('\n'.join((ret[-1],code_str)))
-            else:
-                ret.append(CodePart(code_str))
-
-    return ret
 
 if __name__ == '__main__':
     generate()

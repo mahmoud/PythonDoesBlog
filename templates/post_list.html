@@ -1,0 +1,9 @@
+<%inherit file="base.html"/>
+
+<%block name="body">
+<ul>
+  % for (id,post) in posts.items():
+    <li><a href="/posts/${post.slug}.html">${post.id} - ${post.title} (${post.date})</a></li>
+  % endfor
+</ul>
+</%block>

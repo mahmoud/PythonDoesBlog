@@ -1,0 +1,30 @@
+<%inherit file="base.html"/>
+
+<%block name="body">
+<h1>${post.title}</h2>
+<div>PDW#${post.id} - ${post.author} - ${post.date}</div>
+
+<%
+   from post import DocTestPart, TextPart, CodePart
+%>
+% for part in post.parts:
+  % if isinstance(part, TextPart):
+     <p class="post-text">${part | h}</p>
+  % elif isinstance(part, CodePart):
+     <div class="module-code"><code>${part | h}</code></div>
+  % elif isinstance(part, DocTestPart):
+     <div class="doctest-code"><code>
+     % for example in part.examples:
+       <span>&gt;&gt;&gt;&nbsp;${example.source | h}</span><br/>
+       % if example.want:
+         <span>${example.want | h}</span><br/>
+       % endif 
+     % endfor
+     </code></div>
+  % else:
+     <p>${type(part) | h} - ${repr(part) | h}</p>
+  % endif
+% endfor
+
+<p> Tags:  ${', '.join(post.tags) | h} </p>
+</%block>
