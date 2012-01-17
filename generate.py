@@ -71,10 +71,21 @@ def render_posts(posts):
                       
     return True
 
+def render_css():
+    from settings import OUTPUT_DIR, PYGMENTS_STYLE
+    from pygments.formatters import HtmlFormatter
+
+    formatter = HtmlFormatter(cssclass=PYGMENTS_STYLE)
+    css_defs = formatter.get_style_defs()
+    with open(os.path.join(OUTPUT_DIR,'code_styles.css'),'w') as css_file:
+        css_file.write(css_defs)
+    return
+
 def generate():
     posts = get_posts()
     check_monotonic(posts)
     post_list = render_posts(posts)
+    render_css()
     import pdb;pdb.set_trace()
 
 # TODO: automatic linking to other PDWs via syntax PDWxxx where xxx is an integer ID

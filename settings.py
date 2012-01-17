@@ -10,3 +10,5 @@ AUTHORS = {'Kurt': Author('Kurt', 'Kurt Rose', 'kurt@pythondoeswhat.com'),
 
 OUTPUT_DIR    = './pub/'
 TEMPLATE_DIRS = ['./templates/']
+
+PYGMENTS_STYLE = "friendly"
