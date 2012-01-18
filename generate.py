@@ -1,19 +1,19 @@
 import os, imp, doctest, datetime
-from collections import OrderedDict, namedtuple
-import settings
+from collections import OrderedDict, defaultdict, namedtuple
+from util import slugify
 
-source_dir = settings.SOURCE_DIR
-posts      = OrderedDict()
+import settings
+from settings import SOURCE_DIR, SOURCE_EXCLUDE, OUTPUT_DIR
 
 from post import Post
 
 def get_posts():
     post_list = []
-    for file_path in os.listdir(settings.SOURCE_DIR):
-        if not file_path.endswith('.py') or file_path in settings.SOURCE_EXCLUDE:
+    for file_path in os.listdir(SOURCE_DIR):
+        if not file_path.endswith('.py') or file_path in SOURCE_EXCLUDE:
             continue
 
-        full_path = os.path.join(source_dir, file_path)
+        full_path = os.path.join(SOURCE_DIR, file_path)
         try:
             post_list.append(Post(full_path))
         except Exception as e:
@@ -23,6 +23,13 @@ def get_posts():
     posts = OrderedDict((p.id, p) for p in sorted(post_list, key=lambda p: p.date))
     
     return posts
+
+def get_tag_dict(posts):
+    tag_dict = defaultdict(list)
+    for id, post in posts.items():
+        for tag in post.tags:
+            tag_dict[tag].append(post)
+    return tag_dict
 
 def check_monotonic(posts):
     monotonic = True
@@ -50,20 +57,29 @@ def render_to(template_name, data=None, **kwargs):
         print exceptions.text_error_template().render()
     return rendered
 
-def render_posts(posts):
-    from settings import OUTPUT_DIR
-    try:
-        os.listdir(OUTPUT_DIR)
-    except OSError as ose:
+# TODO: refactor to check/incrementally create directory structure
+def requires_pub_dir(f): 
+    from functools import wraps
+    @wraps(f)
+    def g(*args, **kwargs):
+        import sys
         try:
-            os.mkdir(OUTPUT_DIR)
-            os.mkdir(os.path.join(OUTPUT_DIR,'posts'))
-        except OSError as ose2:
-            print 'Output directory',OUTPUT_DIR,'does not exist and could not be created.'
-            return False
+            os.listdir(OUTPUT_DIR)
+        except OSError as ose:
+            try:
+                os.mkdir(OUTPUT_DIR)
+                os.mkdir(os.path.join(OUTPUT_DIR,'posts'))
+                os.mkdir(os.path.join(OUTPUT_DIR,'tags'))
+            except OSError as ose2:
+                print 'Publishing directory structure could not be created under',OUTPUT_DIR
+                sys.exit(1)
+        return f(*args, **kwargs)
+    return g
 
+@requires_pub_dir
+def render_posts(posts):
     with open(os.path.join(OUTPUT_DIR,'post_list.html'),'w') as pl_file:
-        pl_file.write(render_to('post_list.html', posts=posts))
+        pl_file.write(render_to('post_list.html', posts=posts.values()))
 
     for pid, post in posts.items():
         with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.html'), 'w') as p_file:
@@ -71,6 +87,14 @@ def render_posts(posts):
                       
     return True
 
+@requires_pub_dir
+def render_tag_pages(tag_dict):
+    for tag, posts in tag_dict.items():
+        tag_slug = slugify(unicode(tag))
+        with open(os.path.join(OUTPUT_DIR, 'tags', tag_slug+'.html'), 'w') as t_file:
+            t_file.write(render_to('post_list.html', posts=posts))
+
+@requires_pub_dir
 def render_css():
     from settings import OUTPUT_DIR, PYGMENTS_STYLE
     from pygments.formatters import HtmlFormatter
@@ -83,9 +107,13 @@ def render_css():
 
 def generate():
     posts = get_posts()
+    tag_dict  = get_tag_dict(posts)
+
     check_monotonic(posts)
-    post_list = render_posts(posts)
+    render_posts(posts)
+    render_tag_pages(tag_dict)
     render_css()
+
     import pdb;pdb.set_trace()
 
 # TODO: automatic linking to other PDWs via syntax PDWxxx where xxx is an integer ID

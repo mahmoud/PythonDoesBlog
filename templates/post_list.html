@@ -2,7 +2,7 @@
 
 <%block name="body">
 <ul>
-  % for (id,post) in posts.items():
+  % for post in posts:
     <li><a href="/posts/${post.slug}.html">${post.id} - ${post.title} (${post.date})</a></li>
   % endfor
 </ul>
