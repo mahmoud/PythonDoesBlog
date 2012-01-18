@@ -114,6 +114,9 @@ def generate():
     render_tag_pages(tag_dict)
     render_css()
 
+    rest = posts[17].get_rest()
+    with open(os.path.join(OUTPUT_DIR,'rest_fun.rst'),'w') as rst_file:
+        rst_file.write(rest)
     import pdb;pdb.set_trace()
 
 # TODO: automatic linking to other PDWs via syntax PDWxxx where xxx is an integer ID

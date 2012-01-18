@@ -3,6 +3,8 @@ from collections import OrderedDict, namedtuple
 from util import slugify
 import settings
 
+import pygments_rest
+
 class DocTestPart(object):
     def __init__(self, example):
         self.examples = [example]
@@ -11,12 +13,37 @@ class DocTestPart(object):
     def __repr__(self):
         return '<DocTestPart>'+self.examples.__repr__()
 
-class TextPart(str):
-    def __repr__(self):
-        return 'TextPart: '+str.__repr__(self)
+    def get_rest(self):
+        code = []
+        for example in self.examples:
+            code.append('>>> '+example.source.strip())
+            if example.want:
+                code.append(example.want.strip().replace('\n','\n   '))
+        ret = '.. sourcecode:: pycon\n\n   '+('\n   '.join(code))+'\n'
+        return ret
+
+class TextPart(object):
+    def __init__(self, text):
+        self.text = text
+
+    def __str__(self):
+        return self.text
+
+    def get_rest(self):
+        return self.text+'\n'
+
 class CodePart(str):
-    def __repr__(self):
-        return 'CodePart: '+str.__repr__(self)
+    def __init__(self, code):
+        self.code = code
+
+    def add(self, code):
+        self.code = '\n'.join((self.code, code))
+    def __str__(self):
+        return self.code
+
+    def get_rest(self):
+        ret = '.. sourcecode:: python\n   :linenos:\n\n   '+self.code.replace('\n', '\n   ')+'\n'
+        return ret
 
 class Post(object):
     def __init__(self, module_path):
@@ -46,7 +73,11 @@ class Post(object):
 
         self.parts    = get_parts(self.module_src)
 
-metadata_attrs = ('date','title','tags','author', 'draft')
+    def get_rest(self):
+        return '\n'.join([part.get_rest() for part in self.parts])
+            
+
+metadata_attrs = ('date','title','tags','author','draft')
 
 def get_parts(string):
     ret = []
@@ -59,7 +90,9 @@ def get_parts(string):
     str_linestarts = [ x.lineno for x in m_ast.body if isinstance(x, Expr) and isinstance(x.value, Str)]
     for i, node in enumerate(m_ast.body):
         lineno = node.lineno
-        if isinstance(node, Expr) and isinstance(node.value, Str):
+        if isinstance(node, Assign) and node.targets[0].id in metadata_attrs:
+            continue
+        elif isinstance(node, Expr) and isinstance(node.value, Str):
             for s in dtp.parse(node.value.s):
                 if isinstance(s, Example):
                     if ret and isinstance(ret[-1], DocTestPart):
@@ -70,15 +103,13 @@ def get_parts(string):
                     ret.append(TextPart(s.strip()))
                 else:
                     continue
-        elif isinstance(node, Assign) and node.targets[0].id in metadata_attrs:
-            continue
         else:
             last_line = 0
             for subnode in ast.walk(node):
                 last_line = max(getattr(subnode,'lineno',0), last_line)
             code_str = '\n'.join(lines[lineno-1:last_line]).strip()
             if ret and isinstance(ret[-1], CodePart):
-                ret[-1] = CodePart('\n'.join((ret[-1],code_str)))
+                ret[-1].add(code_str)
             else:
                 ret.append(CodePart(code_str))
 
