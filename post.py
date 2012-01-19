@@ -78,12 +78,11 @@ class Post(object):
         return '\n'.join([part.get_rest() for part in self.parts])
 
     def get_html(self, body_only=True):
-        from cStringIO import StringIO
+        import sys
         import pygments_rest
         from docutils.core import Publisher
-        from docutils.error_reporting import ErrorOutput
         from docutils.io import StringInput, StringOutput
-
+        from cStringIO import StringIO
         
         settings = {'doctitle_xform'     : 1,
                     'pep_references'     : 1,
@@ -108,49 +107,23 @@ class Post(object):
         pub.process_programmatic_settings(settings_spec=None,
                                           settings_overrides=settings,
                                           config_section=None)
-        settings = pub.get_settings()
         pub.set_source(post_rst,source_path=self.module_path)
         pub.set_destination(None, None)
-        """
-        from docutils.parsers.rst import Parser
-        from docutils import writers
-        from docutils.utils import new_document, Reporter
-        writer = writers.get_writer_class('html')()
-        parser = Parser()
-        doc = new_document(post_rst, settings)
-        doc.reporter = Reporter(self.module_path, report_level=2, halt_level=5, stream=errors_io)
-        parser.parse(post_rst, doc)
-        doc.transformer.populate_from_components((parser, writer))
-        doc.transformer.apply_transforms()
-        destination = StringOutput(destination=None, destination_path=None, encoding=settings.output_encoding, error_handler=settings.output_encoding_error_handler)
 
-        html_body = ''
-        try:
-            html_full = writer.write(doc, destination)
-            html_body = ''.join(writer.html_body)
-        except Exception as e:
-            pass
-
-
-
-        if self.id == 9:
-            import pdb;pdb.set_trace()
-        """
-        import sys
         errors_io = StringIO()
         real_stderr = sys.stderr
         sys.stderr = errors_io
+
         html_full = pub.publish(enable_exit_status=False)
         html_body = ''.join(pub.writer.html_body)
+
         sys.stderr = real_stderr
         errors = errors_io.getvalue()
         if errors:
-            import pdb;pdb.set_trace()
+            import pdb;pdb.set_trace() # TODO: post-process
         errors_io.close()
-        if html_body:
-            return html_body if body_only else html_full
-        else:
-            return "You've got errors, broski."
+
+        return html_body if body_only else html_full
 
 metadata_attrs = ('date','title','tags','author','draft')
 
