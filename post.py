@@ -90,18 +90,10 @@ class Post(object):
                     'rfc_references'     : 1,
                     'footnote_references': 'superscript',
                     'output_encoding'    : 'unicode',
-                    'report_level'       : 1,
+                    'report_level'       : 5,
                     }
 
         post_rst = render_to('post_single.rst.mako', post=self)
-        errors_io = StringIO()
-        pub_error_output = ErrorOutput(errors_io)
-
-        from docutils.parsers.rst import Parser
-        from docutils.utils import new_document
-        parser = Parser()
-        #doc = new_document(post_rst, None)
-        #parser.parse(post_rst, doc)
 
         pub = Publisher(reader=None, 
                         parser=None, 
@@ -109,7 +101,6 @@ class Post(object):
                         settings=None,
                         source_class=StringInput,
                         destination_class=StringOutput)
-        pub._stderr = pub_error_output
 
         pub.set_components(reader_name='standalone',
                            parser_name='restructuredtext',
@@ -117,20 +108,49 @@ class Post(object):
         pub.process_programmatic_settings(settings_spec=None,
                                           settings_overrides=settings,
                                           config_section=None)
+        settings = pub.get_settings()
         pub.set_source(post_rst,source_path=self.module_path)
         pub.set_destination(None, None)
+        """
+        from docutils.parsers.rst import Parser
+        from docutils import writers
+        from docutils.utils import new_document, Reporter
+        writer = writers.get_writer_class('html')()
+        parser = Parser()
+        doc = new_document(post_rst, settings)
+        doc.reporter = Reporter(self.module_path, report_level=2, halt_level=5, stream=errors_io)
+        parser.parse(post_rst, doc)
+        doc.transformer.populate_from_components((parser, writer))
+        doc.transformer.apply_transforms()
+        destination = StringOutput(destination=None, destination_path=None, encoding=settings.output_encoding, error_handler=settings.output_encoding_error_handler)
 
+        html_body = ''
+        try:
+            html_full = writer.write(doc, destination)
+            html_body = ''.join(writer.html_body)
+        except Exception as e:
+            pass
+
+
+
+        if self.id == 9:
+            import pdb;pdb.set_trace()
+        """
+        import sys
+        errors_io = StringIO()
+        real_stderr = sys.stderr
+        sys.stderr = errors_io
         html_full = pub.publish(enable_exit_status=False)
         html_body = ''.join(pub.writer.html_body)
-
+        sys.stderr = real_stderr
         errors = errors_io.getvalue()
         if errors:
             import pdb;pdb.set_trace()
         errors_io.close()
-        if self.id == 9:
-            import pdb;pdb.set_trace()
-        
-        return html_body if body_only else html_full
+        if html_body:
+            return html_body if body_only else html_full
+        else:
+            return "You've got errors, broski."
 
 metadata_attrs = ('date','title','tags','author','draft')
 
