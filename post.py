@@ -1,24 +1,36 @@
-import os, imp, doctest, datetime
+import os, imp, doctest, datetime, re
 from collections import OrderedDict, namedtuple
 from util import slugify, render_to
 import settings
 
 import pygments_rest
 
+RSTError = namedtuple('RSTError', 'filename line type message text')
+
+metadata_attrs = ('date','title','tags','author','draft')
+
 class DocTestPart(object):
-    def __init__(self, example):
-        self.examples = [example]
+    def __init__(self, example=None):
+        self.examples = []
+        if example:
+            self.add(example)
+
     def add(self, example):
+        example.source = re.split('\s*#\s*doctest\s*:',example.source)[0]
         self.examples.append(example)
     def __repr__(self):
         return '<DocTestPart>'+self.examples.__repr__()
 
-    def get_rest(self):
+    def get_rst(self):
         code = []
         for example in self.examples:
-            code.append('>>> '+example.source.strip())
-            if example.want:
+            source = '>>> '+'\n   ... '.join(example.source.strip().split('\n'))
+            code.append(source)
+            if getattr(example, 'last_got', None):
+                code.append(example.last_got.strip().replace('\n','\n   '))
+            elif example.want:
                 code.append(example.want.strip().replace('\n','\n   '))
+
         ret = '.. sourcecode:: pycon\n\n   '+('\n   '.join(code))+'\n'
         return ret
 
@@ -29,10 +41,10 @@ class TextPart(object):
     def __str__(self):
         return self.text
 
-    def get_rest(self):
+    def get_rst(self):
         return self.text+'\n'
 
-class CodePart(str):
+class CodePart(object):
     def __init__(self, code):
         self.code = code
 
@@ -40,23 +52,25 @@ class CodePart(str):
         self.code = '\n'.join((self.code, code))
     def __str__(self):
         return self.code
+    def __repr__(self):
+        return '<CodePart>'+self.code
 
-    def get_rest(self):
-        ret = '.. sourcecode:: python\n   :linenos:\n\n   '+self.code.replace('\n', '\n   ')+'\n'
+    def get_rst(self):
+        ret = '.. sourcecode:: python\n    :linenos:\n\n    '+self.code.replace('\n', '\n    ')+'\n'
         return ret
 
 class Post(object):
     def __init__(self, module_path):
         self.module_path = module_path
-        self.file_name   = file_name = os.path.basename(module_path)
+        self.filename    = filename = os.path.basename(module_path)
 
-        pdw_id = file_name.split('_')[0].lstrip('0')
+        pdw_id = filename.split('_')[0].lstrip('0')
         try:
             self.id = int(pdw_id)
         except ValueError:
             raise ValueError('PDWs should start with a unique integer representing the PDW ID.'+str(file_path))
         
-        module_name = file_name.split('.')[0].lstrip('_01234567890')
+        module_name = filename.split('.')[0].lstrip('_01234567890')
         #print pdw_id, module_name
 
         imp_desc  = ('', 'r', imp.PY_SOURCE)
@@ -74,10 +88,40 @@ class Post(object):
 
         self.parts    = get_parts(self.module_src)
 
-    def get_rest(self):
-        return '\n'.join([part.get_rest() for part in self.parts])
+        self.run_examples()
 
-    def get_html(self, body_only=True):
+        # so much for laziness/memoization, gotta call this to get errors populated
+        self._html = self._get_html()
+
+    def run_examples(self):
+        from doctest import DocTest, DocTestRunner
+        examples = sum([part.examples for part in self.parts if isinstance(part, DocTestPart)],[])
+        dt = DocTest(examples, self.module.__dict__, self.filename, None, None, None)
+        dtr = DocTestRunner()
+
+        def tmp_out(message_to_throw_away):
+            return
+
+        dtr.run(dt, out=tmp_out, clear_globs=False)
+
+    @property
+    def rst(self):
+        rst = getattr(self, '_rst', None)
+        if not rst:
+            self._rst = rst = '\n'.join([part.get_rst() for part in self.parts])
+        if self.id == 1:
+            import pdb;pdb.set_trace()
+
+        return rst
+
+    @property
+    def html(self):
+        html = getattr(self, '_html', None)
+        if not html:
+            self._html = html = self._get_html()
+        return html
+
+    def _get_html(self, body_only=True):
         import sys
         import pygments_rest
         from docutils.core import Publisher
@@ -89,7 +133,7 @@ class Post(object):
                     'rfc_references'     : 1,
                     'footnote_references': 'superscript',
                     'output_encoding'    : 'unicode',
-                    'report_level'       : 5,
+                    'report_level'       : 2, # 2=show warnings, 3=show only errors, 5=off (docutils.utils
                     }
 
         post_rst = render_to('post_single.rst.mako', post=self)
@@ -113,19 +157,36 @@ class Post(object):
         errors_io = StringIO()
         real_stderr = sys.stderr
         sys.stderr = errors_io
-
-        html_full = pub.publish(enable_exit_status=False)
-        html_body = ''.join(pub.writer.html_body)
-
-        sys.stderr = real_stderr
+        try:
+            html_full = pub.publish(enable_exit_status=False)
+            html_body = ''.join(pub.writer.html_body)
+        finally:
+            sys.stderr = real_stderr
         errors = errors_io.getvalue()
-        if errors:
-            import pdb;pdb.set_trace() # TODO: post-process
+        self._process_rest_errors(errors)
+
         errors_io.close()
 
         return html_body if body_only else html_full
 
-metadata_attrs = ('date','title','tags','author','draft')
+    def _process_rest_errors(self, docutils_errors):
+        errors = []
+        docutils_err_list = docutils_errors.split('\n')
+        for err in docutils_err_list:
+            if err.strip() == '':
+                continue
+            fields   = err.split(':')
+            filename = fields[0].strip()
+            line     = fields[1].strip()
+
+            type_message = fields[2].strip().split(' ')
+            err_type = type_message[0]
+            message  = ' '.join(type_message[1:])
+
+            text     = ':'.join(fields[3:]).strip(' .')
+
+            errors.append(RSTError(filename, line, err_type, message, text))
+        self.rst_errors = errors
 
 def get_parts(string):
     ret = []
@@ -162,3 +223,4 @@ def get_parts(string):
                 ret.append(CodePart(code_str))
 
     return ret
+

@@ -2,7 +2,7 @@
 
 <%namespace file="highlight.mako" import="*" />
 <%block name="body">
-${post.get_html()}
+${post.html}
 % if post.tags:
   <p> Tags:  ${', '.join(post.tags) | h} </p>
 % endif

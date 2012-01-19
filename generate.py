@@ -15,8 +15,14 @@ def get_posts():
 
         full_path = os.path.join(SOURCE_DIR, file_path)
         try:
-            post_list.append(Post(full_path))
+            post = Post(full_path)
+            for error in post.rst_errors:
+                print 'Error in',post.filename,'on line',str(error.line)+': ',error.message,
+                if error.text: print '('+error.text+')'
+            post_list.append(post)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             print 'Error creating Post from '+str(full_path)+':'+str(e)
             continue
     
@@ -90,13 +96,6 @@ def render_css():
         css_file.write(css_defs)
     return
 
-def render_html(posts):
-    with open(os.path.join(OUTPUT_DIR,'derp.html'),'w') as rst_file:
-        rst_file.write(posts[17].get_html())
-
-    import pdb;pdb.set_trace()
-    return
-
 def generate():
     posts = get_posts()
     tag_dict  = get_tag_dict(posts)
@@ -105,8 +104,7 @@ def generate():
     render_posts(posts)
     render_tag_pages(tag_dict)
     render_css()
-
-    render_html(posts)
+    import pdb;pdb.set_trace()
 
 # TODO: automatic linking to other PDWs via syntax PDWxxx where xxx is an integer ID
 
