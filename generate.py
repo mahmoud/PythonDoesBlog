@@ -1,6 +1,6 @@
 import os, imp, doctest, datetime
 from collections import OrderedDict, defaultdict, namedtuple
-from util import slugify
+from util import slugify, render_to
 
 import settings
 from settings import SOURCE_DIR, SOURCE_EXCLUDE, OUTPUT_DIR
@@ -42,21 +42,6 @@ def check_monotonic(posts):
             cur_max_id = pid
     return monotonic
 
-def render_to(template_name, data=None, **kwargs):
-    from settings import TEMPLATE_DIRS
-    from mako.lookup import TemplateLookup
-
-    data = data or {}
-    data.update(kwargs)
-    try:
-        lookup   = TemplateLookup(directories=TEMPLATE_DIRS)
-        template = lookup.get_template(template_name)
-        rendered = template.render_unicode(**data)
-    except Exception as e:
-        from mako import exceptions
-        print exceptions.text_error_template().render()
-    return rendered
-
 # TODO: refactor to check/incrementally create directory structure
 def requires_pub_dir(f): 
     from functools import wraps
@@ -96,13 +81,20 @@ def render_tag_pages(tag_dict):
 
 @requires_pub_dir
 def render_css():
-    from settings import OUTPUT_DIR, PYGMENTS_STYLE
+    from settings import PYGMENTS_STYLE
     from pygments.formatters import HtmlFormatter
 
     formatter = HtmlFormatter(cssclass=PYGMENTS_STYLE)
     css_defs = formatter.get_style_defs()
     with open(os.path.join(OUTPUT_DIR,'code_styles.css'),'w') as css_file:
         css_file.write(css_defs)
+    return
+
+def render_html(posts):
+    with open(os.path.join(OUTPUT_DIR,'derp.html'),'w') as rst_file:
+        rst_file.write(posts[17].get_html())
+
+    import pdb;pdb.set_trace()
     return
 
 def generate():
@@ -114,10 +106,7 @@ def generate():
     render_tag_pages(tag_dict)
     render_css()
 
-    rest = posts[17].get_rest()
-    with open(os.path.join(OUTPUT_DIR,'rest_fun.rst'),'w') as rst_file:
-        rst_file.write(rest)
-    import pdb;pdb.set_trace()
+    render_html(posts)
 
 # TODO: automatic linking to other PDWs via syntax PDWxxx where xxx is an integer ID
 

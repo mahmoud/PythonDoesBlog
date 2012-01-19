@@ -1,6 +1,6 @@
 import os, imp, doctest, datetime
 from collections import OrderedDict, namedtuple
-from util import slugify
+from util import slugify, render_to
 import settings
 
 import pygments_rest
@@ -47,7 +47,8 @@ class CodePart(str):
 
 class Post(object):
     def __init__(self, module_path):
-        file_name = os.path.basename(module_path)
+        self.module_path = module_path
+        self.file_name   = file_name = os.path.basename(module_path)
 
         pdw_id = file_name.split('_')[0].lstrip('0')
         try:
@@ -75,7 +76,61 @@ class Post(object):
 
     def get_rest(self):
         return '\n'.join([part.get_rest() for part in self.parts])
-            
+
+    def get_html(self, body_only=True):
+        from cStringIO import StringIO
+        import pygments_rest
+        from docutils.core import Publisher
+        from docutils.error_reporting import ErrorOutput
+        from docutils.io import StringInput, StringOutput
+
+        
+        settings = {'doctitle_xform'     : 1,
+                    'pep_references'     : 1,
+                    'rfc_references'     : 1,
+                    'footnote_references': 'superscript',
+                    'output_encoding'    : 'unicode',
+                    'report_level'       : 1,
+                    }
+
+        post_rst = render_to('post_single.rst.mako', post=self)
+        errors_io = StringIO()
+        pub_error_output = ErrorOutput(errors_io)
+
+        from docutils.parsers.rst import Parser
+        from docutils.utils import new_document
+        parser = Parser()
+        #doc = new_document(post_rst, None)
+        #parser.parse(post_rst, doc)
+
+        pub = Publisher(reader=None, 
+                        parser=None, 
+                        writer=None, 
+                        settings=None,
+                        source_class=StringInput,
+                        destination_class=StringOutput)
+        pub._stderr = pub_error_output
+
+        pub.set_components(reader_name='standalone',
+                           parser_name='restructuredtext',
+                           writer_name='html')
+        pub.process_programmatic_settings(settings_spec=None,
+                                          settings_overrides=settings,
+                                          config_section=None)
+        pub.set_source(post_rst,source_path=self.module_path)
+        pub.set_destination(None, None)
+
+        html_full = pub.publish(enable_exit_status=False)
+        html_body = ''.join(pub.writer.html_body)
+
+        errors = errors_io.getvalue()
+        if errors:
+            import pdb;pdb.set_trace()
+        errors_io.close()
+        if self.id == 9:
+            import pdb;pdb.set_trace()
+        
+        return html_body if body_only else html_full
 
 metadata_attrs = ('date','title','tags','author','draft')
 

@@ -2,32 +2,7 @@
 
 <%namespace file="highlight.mako" import="*" />
 <%block name="body">
-<h1>${post.title}</h2>
-<div>PDW#${post.id} - ${post.author} - ${post.date}</div>
-
-<%
-   from post import DocTestPart, TextPart, CodePart
-   from settings import PYGMENTS_STYLE
-%>
-% for part in post.parts:
-  % if isinstance(part, TextPart):
-     <p class="post-text">${part | h}</p>
-  % elif isinstance(part, CodePart):
-     <div class="module-code">${highlight(part, 'python') | h}</div>
-  % elif isinstance(part, DocTestPart):
-     <div class="doctest-code ${PYGMENTS_STYLE}">
-     % for example in part.examples:
-       <code class="repl-input">${highlight_repl('>>> '+example.source) | h}</code><br/>
-       % if example.want:
-         <code class="repl-output">${highlight_repl(example.want) | h}</code><br/>
-       % endif 
-     % endfor
-     </div>
-  % else:
-     <p>${type(part) | h} - ${repr(part) | h}</p>
-  % endif
-% endfor
-
+${post.get_html()}
 % if post.tags:
   <p> Tags:  ${', '.join(post.tags) | h} </p>
 % endif
