@@ -90,8 +90,9 @@ class Post(object):
 
         self.run_examples()
 
-        # so much for laziness/memoization, gotta call this to get errors populated
+        # so much for laziness, gotta call this to get errors populated (TODO, fix)
         self._html = self._get_html()
+
 
     def run_examples(self):
         from doctest import DocTest, DocTestRunner
@@ -109,9 +110,6 @@ class Post(object):
         rst = getattr(self, '_rst', None)
         if not rst:
             self._rst = rst = '\n'.join([part.get_rst() for part in self.parts])
-        if self.id == 1:
-            import pdb;pdb.set_trace()
-
         return rst
 
     @property
@@ -175,17 +173,20 @@ class Post(object):
         for err in docutils_err_list:
             if err.strip() == '':
                 continue
-            fields   = err.split(':')
-            filename = fields[0].strip()
-            line     = fields[1].strip()
+            try:
+                fields   = err.split(':')
+                filename = fields[0].strip()
+                line     = fields[1].strip()
+                
+                type_message = fields[2].strip().split(' ')
+                err_type = type_message[0]
+                message  = ' '.join(type_message[1:])
+                
+                text     = ':'.join(fields[3:]).strip(' .')
 
-            type_message = fields[2].strip().split(' ')
-            err_type = type_message[0]
-            message  = ' '.join(type_message[1:])
-
-            text     = ':'.join(fields[3:]).strip(' .')
-
-            errors.append(RSTError(filename, line, err_type, message, text))
+                errors.append(RSTError(filename, line, err_type, message, text))
+            except IndexError as ie:
+                pass
         self.rst_errors = errors
 
 def get_parts(string):

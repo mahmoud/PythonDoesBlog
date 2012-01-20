@@ -73,8 +73,10 @@ def render_posts(posts):
         pl_file.write(render_to('post_list.html', posts=posts.values()))
 
     for pid, post in posts.items():
-        with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.html'), 'w') as p_file:
-            p_file.write(render_to('post_single.html', post=post))
+        with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.html'), 'w') as p_html:
+            p_html.write(render_to('post_single.html', post=post))
+        with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.rst'), 'w') as p_rst:
+            p_rst.write(render_to('post_single.rst.mako', post=post))
                       
     return True
 

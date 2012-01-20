@@ -1,9 +1,24 @@
 <%inherit file="base.html"/>
 
 <%block name="body">
+<% import settings %>
 <ul>
   % for post in posts:
-    <li><a href="/posts/${post.slug}.html">${post.id} - ${post.title} (${post.date})</a></li>
+    <li><a href="/posts/${post.slug}.html">${post.id} - ${post.title} (${post.date})</a> 
+      (<a data-disqus-identifier="${post.slug}" href="/posts/${post.slug}.html#disqus_thread">comments</a>)
+    </li>
   % endfor
 </ul>
+
+<script type="text/javascript">
+    var disqus_shortname = 'pythondoeswhat';
+
+    (function () {
+        var s = document.createElement('script'); 
+        s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'http://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </%block>

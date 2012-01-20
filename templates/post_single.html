@@ -1,9 +1,24 @@
 <%inherit file="base.html"/>
 
-<%namespace file="highlight.mako" import="*" />
 <%block name="body">
+<% import settings %>
+
 ${post.html}
-% if post.tags:
-  <p> Tags:  ${', '.join(post.tags) | h} </p>
-% endif
+
+<a href="/posts/${post.slug}.rst">View ReST Source</a>
+
+<div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname  = '${settings.DISQUS_SHORTNAME}';
+    var disqus_identifier = '${post.slug}';
+
+    (function() {
+        var dsq = document.createElement('script'); 
+        dsq.type = 'text/javascript'; 
+        dsq.async = true;
+        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 </%block>

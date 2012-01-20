@@ -1,8 +1,10 @@
 <!doctype html>
+<% import settings %>
 <html>
   <head>
     <title><%block name="head_title">Python Does What</%block></title>
     <link href="/code_styles.css" media="screen" rel="stylesheet" type="text/css" />
+    ${settings.ANALYTICS_CODE}
   </head>
   <body>
     ${self.body()}
