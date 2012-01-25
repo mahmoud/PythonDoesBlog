@@ -1,0 +1,17 @@
+<%block name="tag_cloud">
+<%
+   counts   = dict([(name, len(posts)) for name, posts in tag_dict.items()])
+   max_size = 150
+   min_size = 66
+   most     = max(counts.values())
+   least    = min(counts.values())
+   get_size = lambda c: min_size + ((c - least)*(max_size - min_size))/(most - least)
+%>
+
+<div class="tags" style="width: 35%; text-align:center;">
+  ${len(counts)} tags:<br/>
+  % for tag, count in sorted(counts.items()):
+  <a class="tag" href="/tags/${tag}.html" style="font-size: ${get_size(count)}%">${tag}</a> 
+  % endfor
+</div>
+</%block>

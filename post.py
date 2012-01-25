@@ -90,10 +90,6 @@ class Post(object):
 
         self.run_examples()
 
-        # so much for laziness, gotta call this to get errors populated (TODO, fix)
-        self._html = self._get_html()
-
-
     def run_examples(self):
         from doctest import DocTest, DocTestRunner
         examples = sum([part.examples for part in self.parts if isinstance(part, DocTestPart)],[])
@@ -101,24 +97,30 @@ class Post(object):
         dtr = DocTestRunner()
 
         def tmp_out(message_to_throw_away):
+            # TODO capture error messages, warn
             return
 
         dtr.run(dt, out=tmp_out, clear_globs=False)
 
     @property
+    def text_parts(self):
+        return [ p for p in self.parts if isinstance(p, TextPart) ]
+
+    @property
     def rst(self):
-        rst = getattr(self, '_rst', None)
-        if not rst:
-            self._rst = rst = '\n'.join([part.get_rst() for part in self.parts])
-        return rst
+        return '\n'.join([part.get_rst() for part in self.parts])
 
     @property
     def html(self):
+        """ This memoization is kind of hacky, but docutils is pretty slow. """
         html = getattr(self, '_html', None)
         if not html:
             self._html = html = self._get_html()
         return html
 
+    def bake(self):
+        self._html = self._get_html()
+            
     def _get_html(self, body_only=True):
         import sys
         import pygments_rest
