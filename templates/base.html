@@ -1,13 +1,26 @@
 <!doctype html>
-<% import settings %>
+<%! import settings %>
+<%def name="paging_controls(cur_page, last_page)">
+    <%
+       prev_page = (cur_page - 1)
+       next_page = (cur_page + 1) % (last_page + 1)
+    %>
+    % if prev_page:
+    <a href="page_${prev_page}.html">&lt;&lt;&lt; PREV</a>
+    % endif
+
+    % if next_page:
+    <a href="page_${next_page}.html">NEXT &gt;&gt;&gt;</a>
+    % endif
+</%def>
 <html>
   <head>
     <title><%block name="head_title">Python Does What</%block></title>
     <link href="/code_styles.css" media="screen" rel="stylesheet" type="text/css" />
     ${settings.ANALYTICS_CODE}
   </head>
-  <body>
-    ${self.body()}
+  <body class="<%block name='page_class'>default</%block>">
+    ${next.body()}
   </body>
 </html>
 

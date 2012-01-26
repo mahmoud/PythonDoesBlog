@@ -113,15 +113,16 @@ class Post(object):
     @property
     def html(self):
         """ This memoization is kind of hacky, but docutils is pretty slow. """
-        html = getattr(self, '_html', None)
-        if not html:
-            self._html = html = self._get_html()
-        return html
+        return getattr(self, '_html', self._get_html())
+
+    @property
+    def content_html(self):
+        return self._get_html(content_only=True)
 
     def bake(self):
         self._html = self._get_html()
             
-    def _get_html(self, body_only=True):
+    def _get_html(self, body_only=True, content_only=False):
         import sys
         import pygments_rest
         from docutils.core import Publisher
@@ -136,7 +137,11 @@ class Post(object):
                     'report_level'       : 2, # 2=show warnings, 3=show only errors, 5=off (docutils.utils
                     }
 
-        post_rst = render_to('post_single.rst.mako', post=self)
+        if content_only:
+            post_rst = self.rst
+        else:
+            post_rst = render_to('post_single.rst.mako', post=self)
+                             
 
         pub = Publisher(reader=None, 
                         parser=None, 
@@ -169,6 +174,7 @@ class Post(object):
 
         return html_body if body_only else html_full
 
+
     def _process_rest_errors(self, docutils_errors):
         errors = []
         docutils_err_list = docutils_errors.split('\n')
@@ -190,6 +196,8 @@ class Post(object):
             except IndexError as ie:
                 pass
         self.rst_errors = errors
+
+
 
 def get_parts(string):
     ret = []

@@ -7,6 +7,8 @@ Author = namedtuple('Author', ('name', 'full_name', 'email'))
 AUTHORS = {'Kurt': Author('Kurt', 'Kurt Rose', 'kurt@pythondoeswhat.com'),
            'Mahmoud': Author('Mahmoud', 'Mahmoud Hashemi', 'mahmoud@pythondoeswhat.com')
            }
+POSTS_PER_PAGE = 5
+
 
 OUTPUT_DIR    = './pub/'
 TEMPLATE_DIRS = ['./templates/']

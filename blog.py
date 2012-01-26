@@ -77,9 +77,36 @@ class Blog(object):
         return monotonic
 
     def render(self):
+        self.render_home()
+        return
         self.render_posts()
         self.render_tag_pages()
         self.render_css()
+
+    @requires_pub_dir
+    def render_home(self):
+        from settings import POSTS_PER_PAGE as ppp
+
+        posts = [ p for p in self.posts.values()[::-1] if not p.is_draft ]
+
+        groups = []
+        g_start = g_end = 0
+        while g_end < len(posts):
+            g_end = min( g_start+ppp, len(posts) )
+            groups.append(posts[g_start:g_end])
+            g_start = g_end
+
+        last_page = len(groups)
+        for cur_page, group in enumerate(groups, start=1):
+            filename = 'posts/page_'+str(cur_page)+'.html'
+
+            with open(os.path.join(OUTPUT_DIR, filename), 'w') as p_file:
+                p_file.write(render_to('post_list.html', 
+                                       posts=group, 
+                                       cur_page=cur_page, 
+                                       last_page=last_page))
+
+
 
     @requires_pub_dir
     def render_posts(self):

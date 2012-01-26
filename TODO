@@ -1,18 +1,11 @@
 # Tasks
- * Tag cloud
- * Tag pluarization/normalization?
  * Author lookup
  * Finalize post_list.html component/partial
- * Remove doctest comments
- * Run doctest examples and inline outputs
  * Create requirements.txt
- * Integrate Google Analytics
- * Integrate Disqus
- * Enable Post->ReST output
- * Pygments ReST directive
  * Enable LESS
- * PDW linking syntax
  * Python source linking syntax? (http://hg.python.org)
+ * Feeds
+ * Tag pluarization/normalization?
 
 # Pages
  * Home page
@@ -20,3 +13,15 @@
  * Posts list for tag
  * Post list for author
  * About page
+ * Feeds
+
+# Done
+ * Enable Post->ReST output
+ * Pygments ReST directive
+ * PDW linking syntax
+ * Integrate Google Analytics
+ * Integrate Disqus
+ * Pagination
+ * Remove doctest comments
+ * Run doctest examples and inline outputs
+ * Tag cloud

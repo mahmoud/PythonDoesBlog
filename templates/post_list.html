@@ -1,14 +1,19 @@
 <%inherit file="base.html"/>
 
+<%block name='body_class'>post_list</%block>
+
 <%block name="body">
-<% import settings %>
-<ul>
-  % for post in posts:
-    <li><a href="/posts/${post.slug}.html">${post.id} - ${post.title} (${post.date})</a> 
-      (<a data-disqus-identifier="${post.slug}" href="/posts/${post.slug}.html#disqus_thread">comments</a>)
-    </li>
-  % endfor
-</ul>
+${self.paging_controls(cur_page, last_page)}
+
+% for post in posts:
+   <a href="/posts/${post.slug}.html"><h2>${post.title}</h2></a> 
+   (<a data-disqus-identifier="${post.slug}" href="/posts/${post.slug}.html#disqus_thread">comments</a>)
+   <p>
+     ${post.content_html}
+   </p>
+   <hr/>
+% endfor
+
 
 <script type="text/javascript">
     var disqus_shortname = 'pythondoeswhat';
