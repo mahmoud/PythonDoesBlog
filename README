@@ -1,1 +1,3 @@
-A Python-centric static blog generator. Takes Python modules and turns them into blog posts, making full use of Markdown/ReST, doctests, and straight Python.
+A Python-centric static blog generator. Takes Python modules and turns them into blog posts with a native understanding of ReST, doctests, and straight Python.
+
+Internally, uses docutils, Mako, and Pygments for some of the heavy lifting.
