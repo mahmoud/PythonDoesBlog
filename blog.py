@@ -29,21 +29,22 @@ class Blog(object):
                 print 'Error creating Post from '+str(full_path)+':'+str(e)
                 continue
 
-        self.posts = OrderedDict((p.id, p) for p in sorted(post_list, key=lambda p: p.date))
+        self.posts = sorted(post_list, key=lambda p: p.updated)
 
         self._check_monotonic()
         self._resolve_links()
         
-        for post_id, post in self.posts.items():
-            post.bake()
-            for error in post.rst_errors:
+        for post in self.posts:
+            errors = post.get_errors()
+            for error in errors:
                 print 'Error in',post.filename,'on line',str(error.line)+': ',error.message,
                 if error.text: print '('+error.text+')'
+                print
 
     @property
     def tag_dict(self):
         tag_dict = defaultdict(list)
-        for id, post in self.posts.items():
+        for post in self.posts:
             for tag in post.tags:
                 tag_dict[tag].append(post)
         return tag_dict
@@ -52,49 +53,50 @@ class Blog(object):
         import re
         from itertools import chain
 
+        posts = dict((p.id,p) for p in self.posts)
+
         def repl_link(match):
             pdw_id = int(match.group('pdw_id'))
-            post = self.posts.get(pdw_id)
+            post = posts.get(pdw_id)
             if post:
-                return '`' + match.group(0) + ' </posts/'+self.posts[pdw_id].slug+'.html>`_'
+                return '`' + match.group(0) + ' </posts/'+posts[pdw_id].slug+'.html>`_'
             else:
                 return match.group(0)
 
         intlink = re.compile('(PDW[-|\s]*?(?P<pdw_id>\d+))')
 
-        for text_part in chain.from_iterable(p.text_parts for p in self.posts.values()):
+        for text_part in chain.from_iterable(p.text_parts for p in self.posts):
             text_part.text = intlink.sub(repl_link, text_part.text)
 
     def _check_monotonic(self):
         monotonic = True
         cur_max_id = 0
-        for (pid, post) in self.posts.items():
-            if cur_max_id > pid:
+        for post in self.posts:
+            if cur_max_id > post.id:
                 print 'Warning:',cur_max_id,'appears to be out of order (publish date is before',pid,').'
                 monotonic = False
             else:
-                cur_max_id = pid
+                cur_max_id = post.id
         return monotonic
 
     def render(self):
         self.render_home()
-        return
+        self.render_feeds()
         self.render_posts()
         self.render_tag_pages()
         self.render_css()
 
+        import pdb;pdb.set_trace()
+        return
+
+
     @requires_pub_dir
     def render_home(self):
         from settings import POSTS_PER_PAGE as ppp
+        
+        posts = [ p for p in self.posts[::-1] if not p.is_draft ]
 
-        posts = [ p for p in self.posts.values()[::-1] if not p.is_draft ]
-
-        groups = []
-        g_start = g_end = 0
-        while g_end < len(posts):
-            g_end = min( g_start+ppp, len(posts) )
-            groups.append(posts[g_start:g_end])
-            g_start = g_end
+        groups = group_posts(posts, ppp)
 
         last_page = len(groups)
         for cur_page, group in enumerate(groups, start=1):
@@ -111,9 +113,9 @@ class Blog(object):
     @requires_pub_dir
     def render_posts(self):
         with open(os.path.join(OUTPUT_DIR,'post_list.html'),'w') as pl_file:
-            pl_file.write(render_to('post_list.html', posts=self.posts.values()))
+            pl_file.write(render_to('post_list.html', posts=self.posts))
 
-        for pid, post in self.posts.items():
+        for post in self.posts:
             with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.html'), 'w') as p_html:
                 p_html.write(render_to('post_single.html', post=post))
             with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.rst'), 'w') as p_rst:
@@ -131,6 +133,12 @@ class Blog(object):
             t_file.write(render_to('tag_cloud.html', tag_dict=tag_dict))
 
     @requires_pub_dir
+    def render_feeds(self):
+        posts = [p for p in self.posts if not p.is_draft]
+        with open(os.path.join(OUTPUT_DIR, 'feed', 'atom.xml'), 'w') as a_file:
+            a_file.write(render_to('atom.mako', posts=posts))
+
+    @requires_pub_dir
     def render_css(self):
         from settings import PYGMENTS_STYLE
         from pygments.formatters import HtmlFormatter
@@ -140,3 +148,12 @@ class Blog(object):
 
         with open(os.path.join(OUTPUT_DIR,'code_styles.css'),'w') as css_file:
             css_file.write(css_defs)
+
+def group_posts(posts, size):
+    groups = []
+    g_start = g_end = 0
+    while g_end < len(posts):
+        g_end = min( g_start+size, len(posts) )
+        groups.append(posts[g_start:g_end])
+        g_start = g_end
+    return groups

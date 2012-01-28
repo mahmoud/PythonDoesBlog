@@ -1,4 +1,4 @@
-import os, imp, doctest, datetime, re
+import os, imp, doctest, datetime, re, time
 from collections import OrderedDict, namedtuple
 from util import slugify, render_to
 import settings
@@ -7,7 +7,17 @@ import pygments_rest
 
 RSTError = namedtuple('RSTError', 'filename line type message text')
 
-metadata_attrs = ('date','title','tags','author','draft')
+metadata_attrs = ('pub_date','updated','title','tags','author','draft')
+
+class TextPart(object):
+    def __init__(self, text):
+        self.text = text
+
+    def __str__(self):
+        return self.text
+
+    def get_rst(self, **kwargs):
+        return self.text+'\n'
 
 class DocTestPart(object):
     def __init__(self, example=None):
@@ -21,28 +31,24 @@ class DocTestPart(object):
     def __repr__(self):
         return '<DocTestPart>'+self.examples.__repr__()
 
-    def get_rst(self):
+    def get_rst(self, **kwargs):
+        noclasses = kwargs.get('noclasses', True)
+
         code = []
         for example in self.examples:
-            source = '>>> '+'\n   ... '.join(example.source.strip().split('\n'))
+            source = '>>> '+'\n    ... '.join(example.source.strip().split('\n'))
             code.append(source)
             if getattr(example, 'last_got', None):
-                code.append(example.last_got.strip().replace('\n','\n   '))
+                code.append(example.last_got.strip().replace('\n','\n    '))
             elif example.want:
-                code.append(example.want.strip().replace('\n','\n   '))
+                code.append(example.want.strip().replace('\n','\n    '))
 
-        ret = '.. sourcecode:: pycon\n\n   '+('\n   '.join(code))+'\n'
+        ret = '.. sourcecode:: pycon'
+        if noclasses:
+            ret += '\n    :noclasses:'
+        ret += '\n\n    '+('\n    '.join(code))+'\n'
+
         return ret
-
-class TextPart(object):
-    def __init__(self, text):
-        self.text = text
-
-    def __str__(self):
-        return self.text
-
-    def get_rst(self):
-        return self.text+'\n'
 
 class CodePart(object):
     def __init__(self, code):
@@ -55,8 +61,17 @@ class CodePart(object):
     def __repr__(self):
         return '<CodePart>'+self.code
 
-    def get_rst(self):
-        ret = '.. sourcecode:: python\n    :linenos:\n\n    '+self.code.replace('\n', '\n    ')+'\n'
+    def get_rst(self, **kwargs):
+        noclasses = kwargs.get('noclasses', False)
+        linenos = kwargs.get('linenos', True)
+
+        ret = '.. sourcecode:: python'
+        if noclasses:
+            ret += '\n    :noclasses:'
+        if linenos:
+            ret += '\n    :linenos:'
+        ret += '\n\n    '+self.code.replace('\n', '\n    ')+'\n'
+
         return ret
 
 class Post(object):
@@ -64,12 +79,6 @@ class Post(object):
         self.module_path = module_path
         self.filename    = filename = os.path.basename(module_path)
 
-        pdw_id = filename.split('_')[0].lstrip('0')
-        try:
-            self.id = int(pdw_id)
-        except ValueError:
-            raise ValueError('PDWs should start with a unique integer representing the PDW ID.'+str(file_path))
-        
         module_name = filename.split('.')[0].lstrip('_01234567890')
         #print pdw_id, module_name
 
@@ -83,7 +92,17 @@ class Post(object):
         self.author   = self.module.author # TODO: settings.AUTHORS lookup
         self.tags     = getattr(self.module,'tags',())
         self.is_draft = getattr(self.module,'draft',False)
-        self.date     = datetime.datetime(*self.module.date)
+        self.pub_date = datetime.datetime(*self.module.pub_date)
+
+        updated = getattr(self.module, 'updated', self.pub_date)
+        self.updated  = updated or datetime.datetime(*updated)
+
+        try:
+            int_id  = getattr(settings, 'INTERNAL_ID', 'post_id')
+            self.id = int(getattr(self.module, int_id, time.mktime(self.pub_date.timetuple())))
+        except ValueError:
+            raise ValueError('Internal IDs should be integers.'+str(file_path))
+        
         self.slug     = slugify(unicode(self.title))
 
         self.parts    = get_parts(self.module_src)
@@ -106,23 +125,14 @@ class Post(object):
     def text_parts(self):
         return [ p for p in self.parts if isinstance(p, TextPart) ]
 
-    @property
-    def rst(self):
-        return '\n'.join([part.get_rst() for part in self.parts])
+    def get_rst(self, **kwargs):
+        return '\n'.join([part.get_rst(**kwargs) for part in self.parts])
 
-    @property
-    def html(self):
-        """ This memoization is kind of hacky, but docutils is pretty slow. """
-        return getattr(self, '_html', self._get_html())
-
-    @property
-    def content_html(self):
-        return self._get_html(content_only=True)
-
-    def bake(self):
-        self._html = self._get_html()
+    def get_errors(self):
+        self.get_html()
+        return self.rst_errors
             
-    def _get_html(self, body_only=True, content_only=False):
+    def get_html(self, body_only=True, content_only=False, noclasses=False):
         import sys
         import pygments_rest
         from docutils.core import Publisher
@@ -138,11 +148,12 @@ class Post(object):
                     }
 
         if content_only:
-            post_rst = self.rst
+            post_rst = self.get_rst(noclasses=noclasses)
         else:
-            post_rst = render_to('post_single.rst.mako', post=self)
+            post_rst = render_to('post_single.rst.mako', 
+                                 post=self, 
+                                 noclasses=noclasses)
                              
-
         pub = Publisher(reader=None, 
                         parser=None, 
                         writer=None, 

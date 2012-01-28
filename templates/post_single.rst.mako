@@ -1,9 +1,9 @@
 ${post.title}
 ${ '-' * len(post.title) }
 
-PDW#${post.id} - ${post.author} - ${post.date}
+PDW#${post.id} - ${post.author} - ${post.pub_date}
 
-${post.rst}
+${post.get_rst(noclasses=noclasses)}
 
 
 % if post.tags:

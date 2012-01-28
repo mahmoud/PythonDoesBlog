@@ -1,5 +1,9 @@
 from collections import namedtuple
 
+BLOG_TITLE = 'Python Does What?!'
+BLOG_DESCRIPTION = 'Python idiosyncrasies and funtimes.'
+BLOG_URL = 'http://www.pythondoeswhat.com/'
+
 SOURCE_DIR     = '../PythonDoesWhat/'
 SOURCE_EXCLUDE = ('pdw.py','__init__.py')
 
@@ -9,6 +13,7 @@ AUTHORS = {'Kurt': Author('Kurt', 'Kurt Rose', 'kurt@pythondoeswhat.com'),
            }
 POSTS_PER_PAGE = 5
 
+INTERNAL_ID = 'pdw_id'
 
 OUTPUT_DIR    = './pub/'
 TEMPLATE_DIRS = ['./templates/']

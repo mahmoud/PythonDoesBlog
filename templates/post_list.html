@@ -3,20 +3,23 @@
 <%block name='body_class'>post_list</%block>
 
 <%block name="body">
-${self.paging_controls(cur_page, last_page)}
+<% import settings %>
+% if cur_page:
+  ${self.paging_controls(cur_page, last_page)}
+% endif
 
 % for post in posts:
    <a href="/posts/${post.slug}.html"><h2>${post.title}</h2></a> 
    (<a data-disqus-identifier="${post.slug}" href="/posts/${post.slug}.html#disqus_thread">comments</a>)
    <p>
-     ${post.content_html}
+     ${post.get_html(content_only=True)}
    </p>
    <hr/>
 % endfor
 
 
 <script type="text/javascript">
-    var disqus_shortname = 'pythondoeswhat';
+    var disqus_shortname = ${settings.DISQUS_SHORTNAME};
 
     (function () {
         var s = document.createElement('script'); 
