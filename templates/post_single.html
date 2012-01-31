@@ -2,10 +2,16 @@
 
 <%block name="body">
 <%! import settings %>
+% if post.prev:
+  <a title="${post.prev.title}" href="${post.prev.get_url()}">&lt;&lt;&lt; Previous</a>
+% endif
+% if post.next:
+  <a title="${post.next.title}" href="${post.next.get_url()}">Next &gt;&gt;&gt;</a>
+% endif
 
 ${post.get_html()}
 
-<a href="/posts/${post.slug}.rst">View ReST Source</a>
+<a href="${post.get_url(format='rst')}">View ReST Source</a>
 
 <div id="disqus_thread"></div>
 <script type="text/javascript">

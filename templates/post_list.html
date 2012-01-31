@@ -1,25 +1,57 @@
 <%inherit file="base.html"/>
 
-<%block name='body_class'>post_list</%block>
+<%block name="body_class">post_list</%block>
+
+<%block name="header">
+  <img class="logo" src="/assets/img/pdw_logo_med.png">
+  <h1>Python Does What</h1>
+  <div class="home-links">
+    <a class="feed-link" href="/feed/atom.rss"><img title="Subscribe" src="/assets/img/feed.png" /></a>
+  </div>
+</%block>
 
 <%block name="body">
 <% import settings %>
+<div class="post-list">
+% for post in posts:
+  <div class="post-container">
+    <div class="post-meta">
+      <h2>&gt;&gt;&gt;</h2>
+      % if settings.INTERNAL_NAME:
+        <div class="post-id">${settings.INTERNAL_NAME} #${post.id}</div>
+      % endif
+
+      <div class="post-author">${post.author}</div>
+      <div class="post-date">${self.print_date(post.pub_date)}</div>
+      % if post.tags:
+        <br/>
+        <ul class="tags">
+	  % for tag in sorted(post.tags, key=len):
+	    <li>${tag}</li>
+	  % endfor
+	</ul>
+      % endif
+    </div>
+    <div class="post-content-container">
+      <div class="post-heading">
+	<h2 class="post-title"><a href="${post.get_url()}">${post.title}</a></h2>
+      </div>
+      ${post.get_html(content_only=True)}
+      <br/>
+      (<a data-disqus-identifier="${post.slug}" href="${post.get_url()}#disqus_thread">comments</a>)
+    </div>
+    
+  <hr/>
+  </div>
+% endfor
+</div>
+
 % if cur_page:
   ${self.paging_controls(cur_page, last_page)}
 % endif
 
-% for post in posts:
-   <a href="/posts/${post.slug}.html"><h2>${post.title}</h2></a> 
-   (<a data-disqus-identifier="${post.slug}" href="/posts/${post.slug}.html#disqus_thread">comments</a>)
-   <p>
-     ${post.get_html(content_only=True)}
-   </p>
-   <hr/>
-% endfor
-
-
 <script type="text/javascript">
-    var disqus_shortname = ${settings.DISQUS_SHORTNAME};
+    var disqus_shortname = "${settings.DISQUS_SHORTNAME}";
 
     (function () {
         var s = document.createElement('script'); 

@@ -1,0 +1,243 @@
+@import "reset";
+
+@white: #fff;
+
+@pc-darkest: @pc - #666;
+@pc-darker: @pc - #444;
+@pc-dark: @pc - #222;
+@pc: #3a78a9; /* python blue */
+@pc-light: @pc + #111;
+@pc-lighter: @pc + #222;
+@pc-lightest: @pc + #444;
+
+@sca: #A5DBCF;
+@sca-light: #E7F8F4;
+@sca-lightest: #E7F8F4 + #111;
+
+@gray-darkest: @gray - #444;
+@gray-darker: @gray - #222;
+@gray: #DADADA;
+@gray-light: #E6E6E6;
+@gray-lightest: #F6F6F6;
+
+@text-medium: #444;
+@text-medium-alt: @pc - #222;
+@text-dark: #222; /* #383a3d; */
+@text-dark-alt: @pc - #555;
+@text-darker-alt: @pc - #AAA;
+
+@column-width: 720px;
+@meta-width: 150px;
+@content-width: @column-width - @meta-width;
+
+.cf() {
+        content: "\0020";
+        display: table;
+        height: 0;
+        overflow: hidden;
+}
+
+.clearfix {
+        &:before { .cf(); }
+        &:after { .cf(); clear: both; }
+        zoom: 1;
+}
+
+body {
+  background: @gray-light;
+  color: @text-dark;
+  width: 100%;
+  font: 16px/24px HelveticaNeue, Helvetica, Arial,  sans-serif;
+}
+
+img, object, embed {
+  display: block;
+}
+
+a {
+  color: @pc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1, h2, h3 {
+  color: @text-dark;
+  font-size: 36px;
+  line-height: 36px;
+  margin: 0 0 36px 0;
+  text-shadow: #fbfcfb 0 1px 0;
+}
+
+h2 {
+  font-size:24px;
+  margin:3px 0 33px 0;
+}
+
+h3 {
+  font-size:18px;
+  line-height:18px;
+  margin:3px 0 33px 0;
+}
+
+h4 {
+  color:text-dark;
+}
+
+pre {
+  font-family: 'Consolas', 'Lucida Console', 'Courier New';
+
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+
+
+#page-content {
+  width: @column-width;
+  margin: 0 auto;
+  padding-left: -20%;
+  hr {
+    float: left;
+    margin: 10px 0px 0px -20px;
+    width: @column-width + 60px;
+  }
+}
+
+#page-header {
+  width: 100%;
+  margin: 0 auto;
+  background: @gray-lightest;
+  border-bottom: 3px solid @text-medium;
+  .clearfix;
+  img.logo {
+    display: block;
+    margin: 0 auto;
+  }
+
+  h1 {
+    float: left;
+    clear: none;
+    margin: 0 auto;
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-variant: small-caps;
+    font-family: 'Lato', sans-serif;
+    font-size: 42pt;
+    line-height: 42px;
+    margin-bottom: 36px;
+  }
+
+  .home-links {
+    display: none;
+    width: 300px;
+    margin: 0 auto;
+    padding-left: @column-width;
+    clear: none;
+    line-height: 36px;
+    vertical-align: text-top;
+    .clearfix;
+    img {
+      display: inline-block;
+      text-align: center;
+    }
+  }
+}
+
+.post-container {
+  padding: 20px 0 15px 0;
+  overflow: hidden;
+  width: @column-width;
+
+  .post-content-container {
+    .clearfix;
+    float: left;
+    width: @content-width;
+  }
+
+  .post-meta {
+    float: left;
+    width: @meta-width;
+    
+    .post-id {
+      color: @gray-darkest - #222;
+    }
+    
+    .post-author {
+      color: @gray-darkest;
+    }
+
+    .post-date {
+      color: @gray-darker;
+    }
+  }
+
+  .post-heading {
+    float: left;
+    clear: right;
+    width: @content-width;
+  }
+
+  div.document {
+    float: left;
+    width: @content-width;
+    p {
+      display: block;
+    }
+  }
+}
+
+@linenos-width: 20px;
+table.code {
+  border-spacing: 0px;
+  width: @linenos-width + @content-width;
+  margin-left: -@linenos-width;
+  td.code {
+    width: @content-width;
+  }
+  td.linenos {
+    width: @linenos-width;
+  }
+  div.linenodiv {
+    text-align: right;
+    width: @linenos-width;
+    color: @gray-darker;
+  }
+}
+
+div.code {
+  padding-left: 1em;
+  margin: 15px 0;
+  width: @content-width;
+  background: transparent; /*@gray-light;*/
+}
+
+.post-list {
+  ul.tags {
+    font-size: smaller;
+    color: @gray-darker;
+  }
+}
+
+.paging-controls {
+  a {
+    display: block;
+    clear: none;
+    font-size: 125%;
+    font-weight: 250;
+  }
+
+  a.prev-link {
+    float: left;
+  }
+
+  a.next-link {
+    float: right;
+  }
+}

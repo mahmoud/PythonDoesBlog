@@ -50,20 +50,42 @@ class Blog(object):
         return tag_dict
 
     def _resolve_links(self):
+        self._resolve_next_prev_links()
+        self._resolve_internal_links()
+
+    def _resolve_next_prev_links(self):
+        posts = [p for p in self.posts if p.is_pub]
+
+        prev_post = None
+        for post in posts:
+            post.prev = prev_post
+            prev_post = post
+
+        next_post = None
+        for post in reversed(posts):
+            post.next = next_post
+            next_post = post
+            
+
+    def _resolve_internal_links(self):
         import re
         from itertools import chain
+
+        int_name = settings.get('INTERNAL_NAME', False)
+        if not int_name:
+            return
 
         posts = dict((p.id,p) for p in self.posts)
 
         def repl_link(match):
-            pdw_id = int(match.group('pdw_id'))
-            post = posts.get(pdw_id)
+            p_id = int(match.group('int_id'))
+            post = posts.get(p_id)
             if post:
-                return '`' + match.group(0) + ' </posts/'+posts[pdw_id].slug+'.html>`_'
+                return '`' + match.group(0) + ' <'+post.get_url()+'>`_'
             else:
                 return match.group(0)
 
-        intlink = re.compile('(PDW[-|\s]*?(?P<pdw_id>\d+))')
+        intlink  = re.compile('('+int_name+'[-|\s]*?(?P<int_id>\d+))')
 
         for text_part in chain.from_iterable(p.text_parts for p in self.posts):
             text_part.text = intlink.sub(repl_link, text_part.text)
@@ -73,7 +95,7 @@ class Blog(object):
         cur_max_id = 0
         for post in self.posts:
             if cur_max_id > post.id:
-                print 'Warning:',cur_max_id,'appears to be out of order (publish date is before',pid,').'
+                print 'Warning:',cur_max_id,'appears to be out of order (publish date is before',post.id,').'
                 monotonic = False
             else:
                 cur_max_id = post.id
@@ -94,7 +116,7 @@ class Blog(object):
     def render_home(self):
         from settings import POSTS_PER_PAGE as ppp
         
-        posts = [ p for p in self.posts[::-1] if not p.is_draft ]
+        posts = [ p for p in self.posts[::-1] if p.is_pub ]
 
         groups = group_posts(posts, ppp)
 
@@ -134,9 +156,12 @@ class Blog(object):
 
     @requires_pub_dir
     def render_feeds(self):
-        posts = [p for p in self.posts if not p.is_draft]
+        posts = [p for p in self.posts if p.is_pub]
         with open(os.path.join(OUTPUT_DIR, 'feed', 'atom.xml'), 'w') as a_file:
             a_file.write(render_to('atom.mako', posts=posts))
+
+        with open(os.path.join(OUTPUT_DIR, 'feed', 'rss.xml'), 'w') as a_file:
+            a_file.write(render_to('rss.mako', posts=posts))
 
     @requires_pub_dir
     def render_css(self):
@@ -146,7 +171,7 @@ class Blog(object):
         formatter = HtmlFormatter(cssclass=PYGMENTS_STYLE)
         css_defs = formatter.get_style_defs()
 
-        with open(os.path.join(OUTPUT_DIR,'code_styles.css'),'w') as css_file:
+        with open(os.path.join(OUTPUT_DIR,'assets','css','code_styles.css'),'w') as css_file:
             css_file.write(css_defs)
 
 def group_posts(posts, size):

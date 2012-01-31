@@ -7,7 +7,8 @@ import pygments_rest
 
 RSTError = namedtuple('RSTError', 'filename line type message text')
 
-metadata_attrs = ('pub_date','updated','title','tags','author','draft')
+int_id_name = settings.get('INTERNAL_ID', 'int_id')
+metadata_attrs = (int_id_name, 'pub_date','updated','title','tags','author','draft')
 
 class TextPart(object):
     def __init__(self, text):
@@ -80,7 +81,6 @@ class Post(object):
         self.filename    = filename = os.path.basename(module_path)
 
         module_name = filename.split('.')[0].lstrip('_01234567890')
-        #print pdw_id, module_name
 
         imp_desc  = ('', 'r', imp.PY_SOURCE)
         with open(module_path) as module_file:
@@ -109,6 +109,10 @@ class Post(object):
 
         self.run_examples()
 
+    @property
+    def is_pub(self):
+        return (not self.is_draft) and (self.pub_date < datetime.datetime.now())
+
     def run_examples(self):
         from doctest import DocTest, DocTestRunner
         examples = sum([part.examples for part in self.parts if isinstance(part, DocTestPart)],[])
@@ -132,6 +136,16 @@ class Post(object):
         self.get_html()
         return self.rst_errors
             
+    def get_url(self, absolute=False, format='html'):
+        if absolute:
+            import settings
+            prefix = settings.BLOG_URL
+        else:
+            prefix = '/'
+
+        return prefix + 'posts/'+self.slug+'.'+format
+
+
     def get_html(self, body_only=True, content_only=False, noclasses=False):
         import sys
         import pygments_rest

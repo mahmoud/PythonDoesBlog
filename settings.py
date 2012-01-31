@@ -13,7 +13,8 @@ AUTHORS = {'Kurt': Author('Kurt', 'Kurt Rose', 'kurt@pythondoeswhat.com'),
            }
 POSTS_PER_PAGE = 5
 
-INTERNAL_ID = 'pdw_id'
+INTERNAL_ID   = 'pdw_id'
+INTERNAL_NAME = 'PDW'
 
 OUTPUT_DIR    = './pub/'
 TEMPLATE_DIRS = ['./templates/']
@@ -36,3 +37,7 @@ ANALYTICS_CODE = """<script type="text/javascript">
   })();
 
 </script>"""
+
+
+def get(name, default):
+    return globals().get(name, default)
