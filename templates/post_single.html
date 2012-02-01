@@ -1,17 +1,36 @@
 <%inherit file="base.html"/>
 
+<%def name="post_controls(post)">
+  % if post.prev:
+    <a title="${post.prev.title}" href="${post.prev.get_url()}">&lt;&lt;&lt; Previous</a>
+  % endif
+  % if post.next:
+    <a title="${post.next.title}" href="${post.next.get_url()}">Next &gt;&gt;&gt;</a>
+  % endif
+</%def>
+
+<%block name="body_class">post-single</%block>
+
 <%block name="body">
 <%! import settings %>
-% if post.prev:
-  <a title="${post.prev.title}" href="${post.prev.get_url()}">&lt;&lt;&lt; Previous</a>
-% endif
-% if post.next:
-  <a title="${post.next.title}" href="${post.next.get_url()}">Next &gt;&gt;&gt;</a>
-% endif
+<div class="post-container">
+  <h1 class="post-title">${post.title}</h1>
+  <div class="post-meta">
+    <span class="post-id">${settings.INTERNAL_NAME} #${post.id}</span>
+    <span class="post-author">${post.author}</span>
+    <span class="post-date">${self.print_date(post.pub_date)}</span>
+    <div class="rest-link"><a href="${post.get_url(format='rst')}">View ReST Source</a></div>
 
-${post.get_html()}
+    <ul class="tags">
+      % for tag in sorted(post.tags, key=len):
+      <li>${tag}</li>
+      % endfor
+    </ul>  
+  </div>
 
-<a href="${post.get_url(format='rst')}">View ReST Source</a>
+  ${post.get_html(content_only=True)}
+</div>
+
 
 <div id="disqus_thread"></div>
 <script type="text/javascript">

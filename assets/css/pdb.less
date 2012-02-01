@@ -26,10 +26,6 @@
 @text-dark-alt: @pc - #555;
 @text-darker-alt: @pc - #AAA;
 
-@column-width: 720px;
-@meta-width: 150px;
-@content-width: @column-width - @meta-width;
-
 .cf() {
         content: "\0020";
         display: table;
@@ -45,9 +41,10 @@
 
 body {
   background: @gray-light;
-  color: @text-dark;
+  color: @text-medium;
   width: 100%;
-  font: 16px/24px HelveticaNeue, Helvetica, Arial,  sans-serif;
+  font: 15px/28px HelveticaNeue, 'Open Sans', Helvetica, Arial, sans-serif;
+  font-weight:300;
 }
 
 img, object, embed {
@@ -65,132 +62,121 @@ a:hover {
 
 h1, h2, h3 {
   color: @text-dark;
-  font-size: 36px;
-  line-height: 36px;
-  margin: 0 0 36px 0;
+  font-size: 30px;
+  line-height: 30px;
+  margin: 0 0 30px 0;
+  font-weight: 400;
   text-shadow: #fbfcfb 0 1px 0;
 }
 
 h2 {
-  font-size:24px;
-  margin:3px 0 33px 0;
+  font-size:20px;
+  margin:3px 0 28px 0;
 }
 
 h3 {
-  font-size:18px;
-  line-height:18px;
-  margin:3px 0 33px 0;
+  font-size:16px;
+  line-height:16px;
+  margin:3px 0 28px 0;
 }
 
 h4 {
   color:text-dark;
 }
 
-pre {
-  font-family: 'Consolas', 'Lucida Console', 'Courier New';
-
-  white-space: pre-wrap;       /* css-3 */
-  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-  white-space: -pre-wrap;      /* Opera 4-6 */
-  white-space: -o-pre-wrap;    /* Opera 7 */
-  word-wrap: break-word;       /* Internet Explorer 5.5+ */
-}
-
-
-
 #page-content {
   width: @column-width;
   margin: 0 auto;
-  padding-left: -20%;
+  padding: 0 16px;
+  border-left: 1px dotted @gray-darkest;
+  border-right: 1px dotted @gray-darkest;
+  background: @gray-lightest;
+
   hr {
+    border-top: 1px ridge @gray-light;
     float: left;
-    margin: 10px 0px 0px -20px;
+    margin: 28px 0px 0px -18px;
     width: @column-width + 60px;
   }
 }
 
+
+@header-height: 100px;
 #page-header {
   width: 100%;
+  min-width: @column-width;
+  background: @gray-lightest + #111;
   margin: 0 auto;
-  background: @gray-lightest;
-  border-bottom: 3px solid @text-medium;
+  border-bottom: 1px solid @text-medium;
+  height: @header-height;
   .clearfix;
-  img.logo {
-    display: block;
+  div.header-container {
+    width: @column-width;
     margin: 0 auto;
+    text-align: center;
+    height: @header-height;
   }
-
-  h1 {
+  div.banner {
+    width: 100%;
+    margin: 0 auto;
+    padding-left: 10px;
     float: left;
     clear: none;
-    margin: 0 auto;
-    display: block;
-    width: 100%;
     text-align: center;
-    font-variant: small-caps;
-    font-family: 'Lato', sans-serif;
-    font-size: 42pt;
-    line-height: 42px;
-    margin-bottom: 36px;
+    img.logo {
+      vertical-align: middle;
+      height: @header-height;
+      margin-left: -30px;
+      display: inline;
+    }
+
+    h1 {
+      text-align: center;
+      font-variant: small-caps;
+      font-family: 'Lato', sans-serif;
+      font-size: 42pt;
+      line-height: 42px;
+      margin-bottom: 28px;
+      display: inline;
+      vertical-align: middle;
+    }
   }
 
-  .home-links {
-    display: none;
-    width: 300px;
-    margin: 0 auto;
-    padding-left: @column-width;
+  div.home-links {
+    position: relative;
+    bottom: 30px;
+    right: -50px;
+    float: right;
     clear: none;
-    line-height: 36px;
-    vertical-align: text-top;
-    .clearfix;
+    padding-left: 30px;
+    margin-bottom: 10px;
     img {
-      display: inline-block;
-      text-align: center;
+      display: inline;
+      height: 25px;
+    }
+
+    .about-link img {
+      padding-bottom: 1px;
     }
   }
 }
 
-.post-container {
-  padding: 20px 0 15px 0;
-  overflow: hidden;
-  width: @column-width;
+/* Code-specific styles */
+pre, tt {
+  font-family: 'Menlo', 'Consolas', 'Lucida Console', 'Courier New';
+}
+pre {
+  font-size: 14px;
+  line-height: 24px;
+  white-space: pre-wrap;       /* css-3 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
 
-  .post-content-container {
-    .clearfix;
-    float: left;
-    width: @content-width;
-  }
-
-  .post-meta {
-    float: left;
-    width: @meta-width;
-    
-    .post-id {
-      color: @gray-darkest - #222;
-    }
-    
-    .post-author {
-      color: @gray-darkest;
-    }
-
-    .post-date {
-      color: @gray-darker;
-    }
-  }
-
-  .post-heading {
-    float: left;
-    clear: right;
-    width: @content-width;
-  }
-
-  div.document {
-    float: left;
-    width: @content-width;
-    p {
-      display: block;
-    }
-  }
+div.code {
+  padding-left: 1em;
+  margin: 15px 0;
+  width: @content-width;
+  background: transparent; /*@gray-light;*/
 }
 
 @linenos-width: 20px;
@@ -211,20 +197,6 @@ table.code {
   }
 }
 
-div.code {
-  padding-left: 1em;
-  margin: 15px 0;
-  width: @content-width;
-  background: transparent; /*@gray-light;*/
-}
-
-.post-list {
-  ul.tags {
-    font-size: smaller;
-    color: @gray-darker;
-  }
-}
-
 .paging-controls {
   a {
     display: block;
@@ -240,4 +212,106 @@ div.code {
   a.next-link {
     float: right;
   }
+}
+
+@column-width: 650px;
+@meta-width: 120px;
+@meta-margin: 10px;
+@content-width: @column-width - @meta-width - @meta-margin;
+
+/* Post List-specific styles */
+body.post-list .post-container {
+  padding: 0 0 15px 0;
+  overflow: hidden;
+  width: @column-width;
+
+  .post-content-container {
+    .clearfix;
+    float: left;
+    width: @content-width;
+  }
+
+  .post-meta {
+    float: left;
+    width: @meta-width;
+    margin-right: @meta-margin;
+    .post-id {
+      color: @gray-darkest - #222;
+    }
+    
+    .post-author {
+      color: @gray-darker;
+    }
+
+    .post-date {
+      color: @gray-darker;
+      font-size: smaller;
+    }
+
+    ul.tags {
+      font-size: smaller;
+      color: @gray-darker;
+    }
+  }
+
+  .post-heading {
+    float: left;
+    clear: right;
+    width: @content-width;
+  }
+
+  div.document {
+    float: left;
+    width: @content-width;
+    p {
+      display: block;
+    }
+  }
+}
+
+/* Single Post-specific styles */
+body.post-single {
+
+  div.post-container {
+    padding: 40px 10px 0 10px;
+
+    h1.post-title {
+      margin-bottom: 20px;
+    }
+
+    div.post-meta {
+      .clearfix;
+      span {
+	margin-right: 20px;
+	font-size: 110%;
+	color: @gray-darkest;
+      }
+
+      .post-id {
+
+      }
+
+      .post-author {
+      }
+
+      div.rest-link {
+	float: right;
+	display: block;
+      }
+
+      ul.tags {
+	float: right;
+	display: block;
+	clear: both;
+	li {
+	  display: inline;
+	  list-style-type: none;
+	  margin-left: 10px;
+	  font-size: small;
+	  color: @gray-darker;
+	}
+      }
+    }
+  }
+
 }
