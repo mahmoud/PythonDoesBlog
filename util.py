@@ -20,7 +20,8 @@ def requires_pub_dir(f):
                 os.mkdir(OUTPUT_DIR)
                 os.mkdir(os.path.join(OUTPUT_DIR,'posts'))
                 os.mkdir(os.path.join(OUTPUT_DIR,'feed'))
-                os.mkdir(os.path.join(OUTPUT_DIR,'tags'))
+                os.mkdir(os.path.join(OUTPUT_DIR,'tag'))
+                os.mkdir(os.path.join(OUTPUT_DIR,'author'))
             except OSError as ose2:
                 print 'Publishing directory structure could not be created under',OUTPUT_DIR
                 sys.exit(1)

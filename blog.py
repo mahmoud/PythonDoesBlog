@@ -1,4 +1,4 @@
-import os, imp, doctest, datetime
+import os, shutil, imp, doctest, datetime
 from collections import OrderedDict, defaultdict, namedtuple
 
 import settings
@@ -48,6 +48,13 @@ class Blog(object):
             for tag in post.tags:
                 tag_dict[tag].append(post)
         return tag_dict
+
+    @property
+    def author_dict(self):
+        author_dict = defaultdict(list)
+        for post in self.posts:
+            author_dict[post.author].append(post)
+        return author_dict
 
     def _resolve_links(self):
         self._resolve_next_prev_links()
@@ -106,6 +113,7 @@ class Blog(object):
         self.render_feeds()
         self.render_posts()
         self.render_tag_pages()
+        self.render_author_pages()
         self.render_css()
 
         import pdb;pdb.set_trace()
@@ -122,7 +130,7 @@ class Blog(object):
 
         last_page = len(groups)
         for cur_page, group in enumerate(groups, start=1):
-            filename = 'posts/page_'+str(cur_page)+'.html'
+            filename = str(cur_page)+'.html'
 
             with open(os.path.join(OUTPUT_DIR, filename), 'w') as p_file:
                 p_file.write(render_to('post_list.html', 
@@ -130,7 +138,9 @@ class Blog(object):
                                        cur_page=cur_page, 
                                        last_page=last_page))
 
-
+        if last_page:
+            shutil.copyfile(os.path.join(OUTPUT_DIR, '1.html'),
+                            os.path.join(OUTPUT_DIR, 'index.html'))
 
     @requires_pub_dir
     def render_posts(self):
@@ -148,11 +158,23 @@ class Blog(object):
         tag_dict = self.tag_dict
         for tag, posts in tag_dict.items():
             tag_slug = slugify(unicode(tag))
-            with open(os.path.join(OUTPUT_DIR, 'tags', tag_slug+'.html'), 'w') as t_file:
-                t_file.write(render_to('post_list.html', posts=posts))
+            with open(os.path.join(OUTPUT_DIR, 'tag', tag_slug+'.html'), 'w') as t_file:
+                t_file.write(render_to('post_list.html', 
+                                       posts=posts, 
+                                       list_desc="Posts tagged <em>"+tag+"</em>"))
 
-        with open(os.path.join(OUTPUT_DIR, 'tags', 'tag_cloud.html'), 'w') as t_file:
+        with open(os.path.join(OUTPUT_DIR, 'tag', 'tag_cloud.html'), 'w') as t_file:
             t_file.write(render_to('tag_cloud.html', tag_dict=tag_dict))
+
+    @requires_pub_dir
+    def render_author_pages(self):
+        author_dict = self.author_dict
+        for author, posts in author_dict.items():
+            author_slug = slugify(unicode(author))
+            with open(os.path.join(OUTPUT_DIR, 'author', author_slug+'.html'), 'w') as a_file:
+                a_file.write(render_to('post_list.html', 
+                                       posts=posts, 
+                                       list_desc="Posts by "+author+""))
 
     @requires_pub_dir
     def render_feeds(self):

@@ -1,5 +1,5 @@
 <!doctype html>
-<%! import settings %>
+<%! import settings, util %>
 
 <%def name="paging_controls(cur_page, last_page)">
     <%
@@ -8,11 +8,11 @@
     %>
     <div class="paging-controls">
       % if prev_page:
-      <a class="prev-link" href="page_${prev_page}.html">&lt;&lt;&lt; PREV</a>
+      <a class="prev-link" href="${prev_page}.html">&lt;&lt;&lt; PREV</a>
       % endif
 
       % if next_page:
-      <a class="next-link" href="page_${next_page}.html">NEXT &gt;&gt;&gt;</a>
+      <a class="next-link" href="${next_page}.html">NEXT &gt;&gt;&gt;</a>
       % endif
     </div>
 </%def>
@@ -22,32 +22,49 @@
    ${d.strftime("%B")+" "+day+", "+d.strftime("%Y")}
 </%def>
 
+<%def name="slugify(s)">
+${util.slugify(unicode(s))}
+</%def>
+
 <html>
   <head>
     <title><%block name="head_title">Python Does What</%block></title>
+
     <link href="/assets/css/code_styles.css" media="screen" rel="stylesheet" type="text/css" />
     <link rel="stylesheet/less" type="text/css" href="/assets/css/pdb.less">
     <link href='http://fonts.googleapis.com/css?family=Lato:300' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,300,400' rel='stylesheet' type='text/css'>
     <script src="/assets/js/less.js" type="text/javascript"></script>
+
+    <link rel="alternate" type="application/atom+xml" title="Atom feed for ${settings.BLOG_TITLE}" href="${settings.BLOG_URL}feed/atom.xml"/>
+    <link rel="alternate" type="application/rss+xml" title="RSS feed for ${settings.BLOG_TITLE}" href="${settings.BLOG_URL}feed/rss.xml" />
+
     ${settings.ANALYTICS_CODE}
   </head>
   <body class="<%block name='body_class'>${next.body_class}</%block>">
+
     <div id="page-header">
       <div class="header-container">
 	<div class="banner">
-	  <h1>Python Does What</h1>
-	  <img class="logo" src="/assets/img/pdw_logo_med.png">
+	  <h1><a href="/">Python Does What</a></h1>
+	  <a href="/"><img class="logo" src="/assets/img/pdw_logo_med.png"></a>
 	</div>
 	<div class="home-links">
-	  <a class="feed-link" href="/feed/atom.rss"><img title="Subscribe" src="/assets/img/feed.png" /></a>
+	  <a class="feed-link" href="/feed/atom.xml"><img title="Subscribe" src="/assets/img/feed.png" /></a>
 	</div>
       </div>
-
-
     </div>
+
     <div id="page-content">
       ${next.body()}
+    </div>
+
+    <div id="page-footer">
+      <a href="/about.html">About</a>
+      <a href="/feed/atom.xml">Subscribe</a>
+      Github:&nbsp;
+      <a href="https://github.com/makuro/PythonDoesWhat">Posts</a>
+      <a href="https://github.com/makuro/PythonDoesBlog">PDB</a>
     </div>
   </body>
 </html>

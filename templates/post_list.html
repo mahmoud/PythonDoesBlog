@@ -3,8 +3,13 @@
 <%block name="body_class">post-list</%block>
 
 <%block name="body">
-<% import settings %>
+<%! import settings %>
+
 <div class="post-list">
+% if list_desc:
+  <h3 class="post-list-desc">${list_desc}</h3>
+% endif
+
 % for post in posts:
   <div class="post-container">
     <div class="post-meta">
@@ -13,13 +18,15 @@
         <div class="post-id">${settings.INTERNAL_NAME} #${post.id}</div>
       % endif
 
-      <div class="post-author">${post.author}</div>
+      <div class="post-author">
+	<a href="/author/${self.slugify(post.author)}.html">${post.author}</a>
+      </div>
       <div class="post-date">${self.print_date(post.pub_date)}</div>
       % if post.tags:
         <br/>
         <ul class="tags">
 	  % for tag in sorted(post.tags, key=len):
-	    <li>${tag}</li>
+	    <li><a href="/tag/${self.slugify(tag)}.html">${tag}</a></li>
 	  % endfor
 	</ul>
       % endif
