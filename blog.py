@@ -116,7 +116,6 @@ class Blog(object):
         self.render_author_pages()
         self.render_css()
 
-        import pdb;pdb.set_trace()
         return
 
 
@@ -178,7 +177,7 @@ class Blog(object):
 
     @requires_pub_dir
     def render_feeds(self):
-        posts = [p for p in self.posts if p.is_pub]
+        posts = reversed(p for p in self.posts if p.is_pub)
         with open(os.path.join(OUTPUT_DIR, 'feed', 'atom.xml'), 'w') as a_file:
             a_file.write(render_to('atom.mako', posts=posts))
 

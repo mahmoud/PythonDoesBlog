@@ -14,7 +14,7 @@
   <div class="post-container">
     <div class="post-meta">
       <h2>&gt;&gt;&gt;</h2>
-      % if settings.INTERNAL_NAME:
+      % if settings.get('INTERNAL_NAME'):
         <div class="post-id">${settings.INTERNAL_NAME} #${post.id}</div>
       % endif
 

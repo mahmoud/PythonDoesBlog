@@ -1,11 +1,19 @@
 # Tasks
- * Author lookup
- * Finalize post_list.html component/partial
- * Create requirements.txt
- * Enable LESS
+ * Create requirements.txt and setup.py
  * Python source linking syntax? (http://hg.python.org)
- * Feeds
  * Tag pluarization/normalization?
+ * Make Disqus/analytics optional
+ * Create About page (+Author contact info)
+ * Speed improvements (docutils is so slow)
+ * Documentation
+ * settings-configurable CSS (+medium-grade CSS refactor)
+ * generate should copy assets and create proper index.htmls
+ * rewrite rule (remove html)
+ * single-post next/prev links
+ * improve pub directory structure creation
+ * Fix feed dates (Google Reader updated-time issue?)
+ * Download Python module (similar to "View ReST Source")
+ * Copy button for code snippets
 
 # Pages
  * Home page
@@ -22,6 +30,9 @@
  * Integrate Google Analytics
  * Integrate Disqus
  * Pagination
- * Remove doctest comments
+ * Remove doctest comments (and <BLANKLINE>)
  * Run doctest examples and inline outputs
  * Tag cloud
+ * Finalize post_list.html component/partial
+ * Feeds
+ * Enable LESS

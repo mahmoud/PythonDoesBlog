@@ -40,9 +40,15 @@ class DocTestPart(object):
             source = '>>> '+'\n    ... '.join(example.source.strip().split('\n'))
             code.append(source)
             if getattr(example, 'last_got', None):
-                code.append(example.last_got.strip().replace('\n','\n    '))
+                output = example.last_got
             elif example.want:
-                code.append(example.want.strip().replace('\n','\n    '))
+                output = example.want
+            else:
+                output = ''
+
+            output = output.strip().replace('\n<BLANKLINE>\n', '\n\n').replace('\n','\n    ')
+            code.append(output)
+
 
         ret = '.. sourcecode:: pycon'
         if noclasses:

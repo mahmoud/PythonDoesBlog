@@ -16,7 +16,9 @@
 <div class="post-container">
   <h1 class="post-title">${post.title}</h1>
   <div class="post-meta">
+    % if settings.get('INTERNAL_NAME'):
     <span class="post-id">${settings.INTERNAL_NAME} #${post.id}</span>
+    % endif
     <span class="post-author">
       <a href="/author/${self.slugify(post.author)}.html">${post.author}</a>
     </span>

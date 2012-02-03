@@ -28,8 +28,8 @@ ${util.slugify(unicode(s))}
 
 <html>
   <head>
-    <title><%block name="head_title">Python Does What</%block></title>
-
+    <title><%block name="head_title">${settings.BLOG_TITLE}</%block></title>
+    <meta name="description" content="${settings.get('BLOG_DESCRIPTION')}">
     <link href="/assets/css/code_styles.css" media="screen" rel="stylesheet" type="text/css" />
     <link rel="stylesheet/less" type="text/css" href="/assets/css/pdb.less">
     <link href='http://fonts.googleapis.com/css?family=Lato:300' rel='stylesheet' type='text/css'>
