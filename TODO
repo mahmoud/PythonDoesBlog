@@ -14,6 +14,8 @@
  * Fix feed dates (Google Reader updated-time issue?)
  * Download Python module (similar to "View ReST Source")
  * Copy button for code snippets
+ * <head> title for pages other than home page
+ * Tag lines?
 
 # Pages
  * Home page
