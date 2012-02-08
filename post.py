@@ -7,7 +7,7 @@ import pygments_rest
 
 RSTError = namedtuple('RSTError', 'filename line type message text')
 
-int_id_name = settings.get('INTERNAL_ID', 'int_id')
+int_id_name = settings.get('BREEV_ID', 'post_id')
 metadata_attrs = (int_id_name, 'pub_date','updated','title','tags','author','draft')
 
 class TextPart(object):
@@ -47,8 +47,9 @@ class DocTestPart(object):
                 output = ''
 
             output = output.strip().replace('\n<BLANKLINE>\n', '\n\n').replace('\n','\n    ')
-            code.append(output)
 
+            if output:
+                code.append(output)
 
         ret = '.. sourcecode:: pycon'
         if noclasses:
@@ -104,8 +105,7 @@ class Post(object):
         self.updated  = updated or datetime.datetime(*updated)
 
         try:
-            int_id  = getattr(settings, 'INTERNAL_ID', 'post_id')
-            self.id = int(getattr(self.module, int_id, time.mktime(self.pub_date.timetuple())))
+            self.id = int(getattr(self.module, int_id_name, None))
         except ValueError:
             raise ValueError('Internal IDs should be integers.'+str(file_path))
         
@@ -170,7 +170,7 @@ class Post(object):
         if content_only:
             post_rst = self.get_rst(noclasses=noclasses)
         else:
-            post_rst = render_to('post_single.rst.mako', 
+            post_rst = render_to('post_single.rst', 
                                  post=self, 
                                  noclasses=noclasses)
                              

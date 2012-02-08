@@ -1,7 +1,12 @@
+<%! import settings %>
 ${post.title}
 ${ '-' * len(post.title) }
 
-PDW#${post.id} - ${post.author} - ${post.pub_date}
+% if settings.get('BREEV') and post.id:
+${settings.BREEV} #${post.id} - ${post.author} - ${post.pub_date}
+% else:
+${post.author} - ${post.pub_date}
+% endif
 
 ${post.get_rst(noclasses=noclasses)}
 

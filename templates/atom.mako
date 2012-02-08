@@ -10,9 +10,14 @@
 
   <updated>${datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")}</updated>
 
-  <id>${settings.BLOG_URL}/feed/atom/</id>
+  <id>${settings.BLOG_URL}feed/atom/</id>
   <link rel="self" type="application/atom+xml" href="${settings.BLOG_URL}feed/atom.xml" />
   <link rel="alternate" type="text/html" href="${settings.BLOG_URL}" />
+
+  % if settings.get("PUBSUB_URL"):
+  <link rel="hub" href="${settings.PUBSUB_URL}" />
+  % endif
+
   <generator uri="https://www.github.com/makuro/PythonDoesBlog">PythonDoesBlog</generator>
 
   % for post in posts:
@@ -23,7 +28,7 @@
     </author>
     <title type="html"><![CDATA[${post.title}]]></title>
     <link rel="alternate" type="text/html" href="${post.get_url(absolute=True)}" />
-    <id>${post.id}</id>
+    <id>${post.get_url(absolute=True)}</id>
 
     <published>${post.pub_date.strftime("%Y-%m-%dT%H:%M:%SZ")}</published>
     <updated>${post.updated.strftime("%Y-%m-%dT%H:%M:%SZ")}</updated>

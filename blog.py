@@ -61,8 +61,8 @@ class Blog(object):
         self._resolve_internal_links()
 
     def _resolve_next_prev_links(self):
-        posts = [p for p in self.posts if p.is_pub]
-
+        posts = [p for p in self.posts if p.is_pub
+]
         prev_post = None
         for post in posts:
             post.prev = prev_post
@@ -78,15 +78,15 @@ class Blog(object):
         import re
         from itertools import chain
 
-        int_name = settings.get('INTERNAL_NAME', False)
+        int_name = settings.get('BREEV', False)
         if not int_name:
             return
 
-        posts = dict((p.id,p) for p in self.posts)
+        post_ids = dict((p.id,p) for p in self.posts if p.id)
 
         def repl_link(match):
             p_id = int(match.group('int_id'))
-            post = posts.get(p_id)
+            post = post_ids.get(p_id)
             if post:
                 return '`' + match.group(0) + ' <'+post.get_url()+'>`_'
             else:
@@ -101,6 +101,8 @@ class Blog(object):
         monotonic = True
         cur_max_id = 0
         for post in self.posts:
+            if not post.id:
+                continue
             if cur_max_id > post.id:
                 print 'Warning:',cur_max_id,'appears to be out of order (publish date is before',post.id,').'
                 monotonic = False
@@ -150,7 +152,7 @@ class Blog(object):
             with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.html'), 'w') as p_html:
                 p_html.write(render_to('post_single.html', post=post))
             with open(os.path.join(OUTPUT_DIR, 'posts', post.slug+'.rst'), 'w') as p_rst:
-                p_rst.write(render_to('post_single.rst.mako', post=post))
+                p_rst.write(render_to('post_single.rst', post=post))
 
     @requires_pub_dir
     def render_tag_pages(self):
@@ -177,7 +179,7 @@ class Blog(object):
 
     @requires_pub_dir
     def render_feeds(self):
-        posts = reversed(p for p in self.posts if p.is_pub)
+        posts = [p for p in self.posts[::-1] if p.is_pub]
         with open(os.path.join(OUTPUT_DIR, 'feed', 'atom.xml'), 'w') as a_file:
             a_file.write(render_to('atom.mako', posts=posts))
 

@@ -1,4 +1,7 @@
 @import "reset";
+@import url("http://fonts.googleapis.com/css?family=Lato:300,400");
+@import url("http://fonts.googleapis.com/css?family=Droid+Serif:400,700");
+@import url("http://fonts.googleapis.com/css?family=Open+Sans:400,300");
 
 @white: #fff;
 
@@ -35,12 +38,34 @@
         zoom: 1;
 }
 
+@column-width: 600px;
+@column-padding: 28px;
+@meta-width: 110px;
+@meta-margin: 10px;
+@content-width: @column-width - @meta-width - @meta-margin;
+
 body {
   background: @gray-light;
-  color: @text-medium;
+  color: @text-medium + #333;
   width: 100%;
-  font: 15px/28px HelveticaNeue, 'Open Sans', Helvetica, Arial, sans-serif;
-  font-weight:300;
+  font: 14px/24px Georgia, HelveticaNeue, 'Open Sans', Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+sup, sub {
+  height: 0;
+  line-height: 1;
+  vertical-align: baseline;
+  position: relative
+}
+
+sup {
+  bottom: .75ex;
+}
+
+sub {
+  top: .5ex;
 }
 
 img, object, embed {
@@ -49,11 +74,11 @@ img, object, embed {
 
 a {
   color: @pc;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 a:hover {
-  text-decoration: underline;
+  color: @pc-lighter;
 }
 
 h1, h2, h3 {
@@ -63,17 +88,26 @@ h1, h2, h3 {
   margin: 0 0 30px 0;
   font-weight: 400;
   text-shadow: #fbfcfb 0 1px 0;
+  
+  font-family: 'Open Sans', sans-serif;
+
+  a {
+    text-decoration: none;
+    &:hover {
+      color: inherit;
+    }
+  }
 }
 
 h2 {
   font-size:20px;
-  margin: 0 0 28px 0;
+  margin: 0 0 16px 0;
 }
 
 h3 {
   font-size:16px;
   line-height:16px;
-  margin: 0 0 28px 0;
+  margin: 0 0 16px 0;
 }
 
 h4 {
@@ -82,8 +116,8 @@ h4 {
 
 #page-content {
   width: @column-width;
+  padding: 10px @column-padding;
   margin: 0 auto;
-  padding: 0 16px;
   border-left: 1px dotted @gray-darkest;
   border-right: 1px dotted @gray-darkest;
   background: @gray-lightest;
@@ -116,7 +150,7 @@ h4 {
   div.banner {
     width: 100%;
     margin: 0 auto;
-    padding-left: 10px;
+    padding-left: 15px;
     float: left;
     clear: none;
     text-align: center;
@@ -131,21 +165,26 @@ h4 {
       text-align: center;
       font-variant: small-caps;
       font-family: 'Lato', sans-serif;
+      font-weight: 300;
       font-size: 42pt;
       line-height: 42px;
       margin-bottom: 28px;
       display: inline;
       vertical-align: middle;
+      letter-spacing: .7px;
+      word-spacing: 10px;
       a {
-	color: @pc-darker;
-      }
-      a:hover {
+	color: @pc-dark;
 	text-decoration: none;
+	&:hover {
+	  text-decoration: none;
+	}
       }
     }
   }
 
   div.home-links {
+    display: none;
     position: relative;
     bottom: 30px;
     right: -50px;
@@ -166,25 +205,49 @@ h4 {
 
 #page-footer {
   width: @column-width;
-  padding: 0 16px;
+  padding: 0 @column-padding;
   margin: 0 auto;
   background: @text-medium;
   border-left: 1px dotted @gray-darker;
   border-right: 1px dotted @gray-darker;
-  text-align:center;
   color: @gray-light;
   font-weight: 400;
 
   a {
     color: @gray-light;
     font-weight: 400;
-    margin-right: 18px;
-    border-bottom: 1px dotted @gray-light;
+    margin-right: 42px;
+    &:last-child {
+      margin-right: 0;
+    }
   }
   a:hover {
     color: @pc-lightest + #111;
+  }
+}
+
+#top-nav {
+  width: @column-width;
+  padding: 0 @column-padding;
+  margin: 0 auto;
+  
+  background: @gray-lightest + #111;  
+  color: @text-medium;
+  
+  text-align: center;
+  list-style-type: none;
+  margin: 0 auto;
+
+  font-family: 'Lato', sans-serif;
+  li {
+    display: inline;
+    padding: 40px;
+  }
+  
+  a {
+    color: @pc-lightest;
+    display: inline-block;
     text-decoration: none;
-    border-bottom: 1px solid @pc-lightest + #111;
   }
 }
 
@@ -193,7 +256,7 @@ pre, tt {
   font-family: 'Menlo', 'Consolas', 'Lucida Console', 'Courier New';
 }
 pre {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 20px;
   white-space: pre-wrap;       /* css-3 */
   word-wrap: break-word;       /* Internet Explorer 5.5+ */
@@ -231,7 +294,7 @@ table.code {
     display: block;
     clear: none;
     font-size: 125%;
-    font-weight: 250;
+    font-weight: 300;
   }
 
   a.prev-link {
@@ -242,11 +305,6 @@ table.code {
     float: right;
   }
 }
-
-@column-width: 650px;
-@meta-width: 120px;
-@meta-margin: 10px;
-@content-width: @column-width - @meta-width - @meta-margin;
 
 /* Post List-specific styles */
 body.post-list {
@@ -277,6 +335,15 @@ body.post-list {
       float: left;
       width: @meta-width;
       margin-right: @meta-margin;
+      font: 16px/24px 'Lato', sans-serif;
+      font-weight: 300;
+      
+      a {
+	text-decoration: none;
+	&:hover {
+	  text-decoration: underline;
+	}
+      }
       .post-id {
 	color: @gray-darkest;
       }
@@ -292,7 +359,7 @@ body.post-list {
 
       ul.tags a {
 	font-size: smaller;
-	color: @pc-lightest;
+	color: @pc-lighter;
       }
     }
 
@@ -307,7 +374,10 @@ body.post-list {
       width: @content-width;
       margin-bottom: 15px;
       p {
-	margin: 0;
+	&:first-child {
+	  margin-top: 0;
+	}
+	margin-top: 10px;
 	display: block;
       }
     }
@@ -318,7 +388,7 @@ body.post-list {
 body.post-single {
 
   div.post-container {
-    padding: 40px 10px 0 10px;
+    padding: 3px 10px;
 
     h1.post-title {
       margin-bottom: 20px;
@@ -348,7 +418,7 @@ body.post-single {
 	  margin-left: 10px;
 	  font-size: small;
 	  a {
-	    color: @pc-lightest;
+	    color: @pc-lighter;
 	  }
 	}
       }
@@ -361,6 +431,7 @@ body.post-single {
   font-size: 90%;
   line-height: 150%;
   width: 90%;
+  letter-spacing: 0.5px;
 }
 
 #disqus_thread {
@@ -368,7 +439,7 @@ body.post-single {
   padding: 0 10px;
   div, h3 {
     font: 14px/20px HelveticaNeue, 'Open Sans', Helvetica, Arial, sans-serif;
-    font-weight: 300;
+    font-weight: 400;
   }
   #dsq-sort-by {
     display: none;

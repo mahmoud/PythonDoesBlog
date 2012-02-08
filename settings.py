@@ -1,5 +1,8 @@
 from collections import namedtuple
 
+# Note that certain changes may require you to restart
+# the publish server for the new values to take effect.
+
 BLOG_TITLE = 'Python Does What'
 BLOG_DESCRIPTION = 'Python idiosyncrasies and funtimes.'
 BLOG_URL = 'http://www.pythondoeswhat.com/'
@@ -15,8 +18,8 @@ AUTHORS = {'Kurt': Author('Kurt', 'Kurt Rose', 'kurt@pythondoeswhat.com'),
            }
 POSTS_PER_PAGE = 5
 
-INTERNAL_ID   = 'pdw_id'
-INTERNAL_NAME = 'PDW'
+BREEV_ID   = 'pdw_id'
+BREEV = 'PDW'
 
 TEMPLATE_DIRS = ['./templates/']
 
@@ -40,6 +43,8 @@ ANALYTICS_CODE = """<script type="text/javascript">
   })();
 
 </script>"""
+
+PUBSUB_URL = "http://pythondoeswhat.superfeedr.com"
 
 
 def get(name, default=None):
